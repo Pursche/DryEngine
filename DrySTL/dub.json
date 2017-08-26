@@ -1,0 +1,11 @@
+{
+	"name": "drystl",
+	"authors": [
+		"Markus Pursche",
+		"Andreas Vennström"
+	],
+	"description": "A fast STL replacement with non-gc allocators",
+	"copyright": "Copyright © 2017, Markus Pursche",
+	"license": "MIT",
+	"targetType": "library"
+}
