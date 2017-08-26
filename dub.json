@@ -10,6 +10,7 @@
 	"dependencies": {
 		"x11": "~>1.0.16",
 		"opengl": "~>1.0.0",
+		"gl3n": "~>1.3.1",
 		"drygame:dryengine": "*"
 	},
 	"subPackages": [
