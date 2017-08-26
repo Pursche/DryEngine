@@ -1,5 +1,5 @@
 {
-	"name": "drygame",
+	"name": "dryengine",
 	"authors": [
 		"Markus Pursche",
 		"Andreas Vennström"
@@ -7,13 +7,8 @@
 	"description": "A game engine.",
 	"copyright": "Copyright © 2017, Markus Pursche",
 	"license": "MIT",
+	"targetType": "library",
 	"dependencies": {
-		"x11": "~>1.0.16",
-		"opengl": "~>1.0.0",
-		"drygame:dryengine": "*"
-	},
-	"subPackages": [
-		"./DrySTL/",
-		"./DryEngine/"
-	]
+		"drygame:drystl": "*"
+	}
 }
