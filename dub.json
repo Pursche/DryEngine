@@ -1,0 +1,10 @@
+{
+	"name": "dryengine",
+	"authors": [
+		"Markus Pursche",
+		"Andreas Vennström"
+	],
+	"description": "A game engine.",
+	"copyright": "Copyright © 2017, Markus Pursche",
+	"license": "MIT"
+}
