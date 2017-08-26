@@ -1,5 +1,7 @@
 {
 	"fileVersion": 1,
 	"versions": {
+		"opengl": "1.0.0",
+		"x11": "1.0.16"
 	}
 }
