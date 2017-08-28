@@ -1,10 +1,13 @@
 import std.stdio;
 
 import DrySTL.Allocators.linearallocator;
+import render.renderer;
+import render.opengl.renderer_gl;
 
 void main()
 {
 	LinearAllocator allocator = new LinearAllocator(512);
 
-	writeln("Edit source/app.d to start your project.");
+	Renderer_GL renderer = new Renderer_GL();
+	
 }
