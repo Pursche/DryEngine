@@ -1,9 +1,10 @@
-module render.opengl.renderdispatch_dx11;
+module DryEngine.render.opengl.renderdispatch_dx11;
 
-version(Windows)
-{
+import DryEngine.render.renderdispatch;
+import DryEngine.render.types;
+import DryEngine.render.commands;
 
-import render.renderdispatch;
+import DryEngine.render.renderdispatch;
 
 class RenderDispatchContext_DX11 : RenderDispatchContext
 {
@@ -41,6 +42,4 @@ class RenderDispatchContext_DX11 : RenderDispatchContext
     {
         
     }
-}
-
 }

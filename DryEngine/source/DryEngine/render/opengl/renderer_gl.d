@@ -1,7 +1,7 @@
-module render.opengl.renderer_gl;
+module DryEngine.render.opengl.renderer_gl;
 
-import render.renderer;
-import render.types;
+import DryEngine.render.renderer;
+import DryEngine.render.types;
 import opengl.gl4;
 
 class Renderer_GL : Renderer

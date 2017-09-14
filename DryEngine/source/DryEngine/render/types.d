@@ -1,4 +1,4 @@
-module render.types;
+module DryEngine.render.types;
 
 import std.typecons;
 

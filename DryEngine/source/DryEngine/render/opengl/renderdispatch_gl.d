@@ -1,8 +1,8 @@
-module render.opengl.renderdispatch_gl;
+module DryEngine.render.opengl.renderdispatch_gl;
 
-import render.renderdispatch;
-import render.types;
-import render.commands;
+import DryEngine.render.renderdispatch;
+import DryEngine.render.types;
+import DryEngine.render.commands;
 
 import opengl.gl4;
 

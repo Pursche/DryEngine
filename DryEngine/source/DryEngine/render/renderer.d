@@ -1,9 +1,15 @@
-module render.renderer;
+module DryEngine.render.renderer;
 
-import render.types;
+import DryEngine.render.types;
 
 class Renderer 
 {
+    static Renderer _instance;
+    static public Renderer Get()
+    {
+        return _instance;
+    }
+
     public RenderResourceHandle CreateTexture(const RenderTextureDesc desc)
     {
         const RenderResourceHandle handle = 0; // todo
