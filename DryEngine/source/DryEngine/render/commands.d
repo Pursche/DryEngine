@@ -1,6 +1,6 @@
-module render.commands;
+module DryEngine.render.commands;
 
-import render.types;
+import DryEngine.render.types;
 
 struct Cmd_Draw
 {

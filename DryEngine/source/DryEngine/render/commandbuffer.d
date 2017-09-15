@@ -1,4 +1,4 @@
-module commandbuffer;
+module DryEngine.render.commandbuffer;
 
 class CommandBuffer
 {

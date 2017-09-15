@@ -1,6 +1,6 @@
-module render.renderdispatch;
+module DryEngine.render.renderdispatch;
 
-import render.commands;
+import DryEngine.render.commands;
 
 interface RenderDispatchContext
 {
