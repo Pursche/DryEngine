@@ -18,5 +18,8 @@
 	],
 	"excludedSourceFiles-linux": [
 		"*_dx11.d"
+	},
+	"preBuildCommands":[
+		"buildecs"
 	]
 }
