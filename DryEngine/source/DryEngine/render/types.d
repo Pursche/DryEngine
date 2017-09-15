@@ -6,6 +6,8 @@ alias RenderResourceHandle = Typedef!(uint, 0xffffffff);
 
 enum RenderFormat
 {
+    Unknown,
+
     R8_UNORM,
     R8_SNORM,
     R8_UINT,
@@ -90,6 +92,7 @@ enum RenderResourceUsage
     Default,
     Immutable,
     Dynamic,
+    Staging,
 }
 
 enum RenderResourceBindFlag
@@ -125,7 +128,7 @@ struct RenderTextureDesc
 struct RenderBufferDesc
 {
     uint size;
-    RenderFormat format;
+    RenderFormat format = RenderFormat.Unknown;
     RenderResourceBindFlag bindFlags;
     RenderResourceUsage usage;
     void* data;
