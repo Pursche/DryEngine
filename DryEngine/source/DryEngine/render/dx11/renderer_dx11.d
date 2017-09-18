@@ -2,6 +2,7 @@ module DryEngine.render.dx11.renderer_dx11;
 
 import DryEngine.render.renderer;
 import DryEngine.render.types;
+import DryEngine.render.dx11.utils_dx11;
 
 import directx.d3d11;
 
@@ -48,13 +49,32 @@ class Renderer_DX11 : Renderer
 
     override protected bool InitBuffer(RenderResourceHandle handle, const RenderBufferDesc desc)
     {
-        ID3D11Resource resource;
+        ID3D11ShaderResourceView srv = null;
+        ID3D11UnorderedAccessView uav = null;
 
-        // todo
+        D3D11_BUFFER_DESC bd;
+        bd.Usage = GetDX11Usage(desc.usage);
+        bd.ByteWidth = desc.size;
 
-        _resources[cast(size_t)(handle)] = resource;
-        _srvs[cast(size_t)(handle)] = null;
-        _uavs[cast(size_t)(handle)] = null;
+        D3D11_SUBRESOURCE_DATA sd;
+        sd.pSysMem = cast(void*)(desc.data);
+
+        ID3D11Buffer buffer;
+        _device.CreateBuffer(&bd, &sd, &buffer);
+
+        if (desc.bindFlags & RenderResourceBindFlag.ShaderResource)
+        {
+            _device.CreateShaderResourceView(buffer, null, &srv);
+        }
+
+        if (desc.bindFlags & RenderResourceBindFlag.UnorderedAccess)
+        {
+            _device.CreateUnorderedAccessView(buffer, null, &uav);
+        }
+
+        _resources[cast(size_t)(handle)] = buffer;
+        _srvs[cast(size_t)(handle)] = srv;
+        _uavs[cast(size_t)(handle)] = uav;
         return true;
     }
 
