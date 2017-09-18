@@ -82,11 +82,6 @@ class ComponentStore(Component, size_t ownId)
 		}
 	}
 
-	private void Copy(size_t src, size_t dst)
-	{
-		_components.Copy(src, dst);
-	}
-
 	public void Add()(EntityType type)
 	{
 		const size_t rangeIdx = FindRange(type);
@@ -94,7 +89,7 @@ class ComponentStore(Component, size_t ownId)
 		{
 			Range* r = &_ranges[i];
 			auto last = r.first + max(0, signed(r.count) - 1);
-			Copy(r.first, last);
+			_components.Copy(r.first, last);
 			++r.first;
 		}
 
