@@ -9,6 +9,7 @@ import directx.d3d11;
 
 import DryEngine.core.system;
 import DryEngine.render.dx11.renderer_dx11;
+import DryEngine.ecs.ecswrapper;
 
 IDXGIFactory g_dxgiFactory;//yolo
 
@@ -90,6 +91,10 @@ int DryMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 	System system = new System(null);
 
 	ShowWindow(hwnd, nCmdShow);
+
+	DryEngine.ecs.ecswrapper.LoadECS();
+	DryEngine.ecs.ecswrapper.Start();
+
 	while (IsWindowVisible(hwnd))
 	{
 		MSG msg;
@@ -99,10 +104,13 @@ int DryMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 			DispatchMessage(&msg);
 		}
 
+		DryEngine.ecs.ecswrapper.Update(0.5f);
 		system.Update();
 
 		window.swapChain.Present(0, 0);
 	}
+
+	DryEngine.ecs.ecswrapper.UnloadECS();
 
 	UnregisterClass(wc.lpszClassName, wc.hInstance);
 	DestroyWindow(hwnd);

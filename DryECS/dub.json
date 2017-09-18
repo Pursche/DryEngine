@@ -1,0 +1,15 @@
+{
+	"name": "dryecs",
+	"authors": [
+		"Markus Pursche",
+		"Andreas Vennström"
+	],
+	"description": "An efficient entity component system for dryengine.",
+	"copyright": "Copyright © 2017, Markus Pursche",
+	"license": "MIT",
+	"targetType": "library",
+	"dependencies": {
+		"gl3n": "~>1.3.1",
+		"drygame:drystl": "*"
+	}
+}

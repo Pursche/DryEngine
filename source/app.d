@@ -1,4 +1,4 @@
-import std.stdio;
+/*import std.stdio;
 
 import DrySTL.Allocators.linearallocator;
 import ecs.ecswrapper;
@@ -10,7 +10,9 @@ void main()
 	Runtime.initialize();
 	LinearAllocator allocator = new LinearAllocator(512);
 
-	LoadECS();
-	scope(exit) UnloadECS();
-	LoadECS();
+	ecs.ecswrapper.LoadECS();
+	ecs.ecswrapper.Start();
+	ecs.ecswrapper.Update(0.5f);
+	ecs.ecswrapper.UnloadECS();
 }
+*/
