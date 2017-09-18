@@ -1,5 +1,7 @@
 module DryECS.utils;
 
+import gl3n.linalg;
+
 struct In(alias Variable)
 {
     alias variable = Variable;
@@ -24,7 +26,7 @@ struct OutAll(alias Variable)
     string parameter;
 }
 
-template SOA(Struct, size_t LENGTH) 
+template SOA(Struct) 
 {
     struct SOA  
     {
@@ -34,10 +36,23 @@ template SOA(Struct, size_t LENGTH)
         {
             string ret;
             foreach (I, TYPE; typeof(Struct.tupleof))
-                ret ~= "align(16) typeof(Struct.tupleof["~I.stringof~"])["~LENGTH.stringof~"] "
-                        ~ MEMBERNAME!I ~ ";";
+                ret ~= "typeof(Struct.tupleof["~I.stringof~"])[] "~MEMBERNAME!I~";";
             return ret;
         }
         mixin(__gentypes());
+
+        public this(size_t capacity)
+        {
+            foreach (I, TYPE; typeof(Struct.tupleof))
+                mixin(MEMBERNAME!I ~ " = new "~TYPE.stringof~"[capacity];");
+        }
+
+        public void Copy(size_t src, size_t dst)
+        {
+            foreach (I, TYPE; typeof(Struct.tupleof))
+            {
+                mixin(MEMBERNAME!I ~ "[dst] = " ~ MEMBERNAME!I ~ "[src];");
+            }
+        }
     }
 }
