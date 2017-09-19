@@ -3,7 +3,8 @@ import gl3n.linalg;
 
 struct CameraComponent
 {
-    float fov;
+    float fov = 70.0f;
+    
     mat4 matView;
     mat4 matProj;
     mat4 matViewProj;

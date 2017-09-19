@@ -9,7 +9,7 @@ alias ulong EntityID;
 alias ulong EntityType;
 alias ulong SystemKey;
 
-class ComponentStore(Component, size_t ownId)
+class ComponentStore(Component, size_t componentId)
 {
 	struct Range
 	{
@@ -38,14 +38,15 @@ class ComponentStore(Component, size_t ownId)
 	}
 
 	// Access component data for read-write access.
-	public T[] Set(SystemKey key, T, string field)()
+	public T[] ReadWrite(SystemKey dependencies, T, string field)()
 	{
-		static if (key == ownId)
+		static if (!dependencies)
 		{
 			mixin("return _components."~field~"[0 .. _count];");
 		}
 		else
 		{
+			const SystemKey key = dependencies | componentId;
 			T[] ret;
 			foreach (i, k; _rangeKeys)
 			{
@@ -60,24 +61,50 @@ class ComponentStore(Component, size_t ownId)
 	}
 
 	// Access component data for read-only access.
-	public const(T)[] Get(SystemKey key, T, string field)()
+	public const(T)[] Read(SystemKey dependencies, T, string field)()
 	{
-		return cast(const T[])(Set!(key, T, field));
+		return cast(const T[])(ReadWrite!(dependencies, T, field));
 	}
 
-	public void Feedback(size_t key, string field, T)(T[] arr)
+	// Access component data for write-only access.
+	public T[] Write(SystemKey dependencies, T, string field)()
 	{
-		assert(key != ownId, "Feedback is useless.");
-		import core.stdc.string;
-
-		size_t src = 0;
-		foreach (i, k; _rangeKeys)
+		static if (!dependencies)
 		{
-			if ((key & k) == key)
+			mixin("return _components."~field~"[0 .. _count];");
+		}
+		else
+		{
+			const SystemKey key = dependencies | componentId;
+			size_t count = 0;
+			foreach (i, k; _rangeKeys)
 			{
-				const Range r = _ranges[i];
-				mixin("memcpy(&_components."~field~"[r.first], &arr[src], r.count * T.sizeof);");
-				src += r.count;
+				if ((key & k) == key)
+				{
+					const Range r = _ranges[i];
+					count += r.count;
+				}
+			}
+			return new T[count];
+		}
+	}
+
+	public void Feedback(SystemKey dependencies, string field, T)(T[] arr)
+	{
+		static if (!dependencies)
+		{
+			import core.stdc.string;
+
+			const SystemKey key = dependencies | componentId;
+			size_t src = 0;
+			foreach (i, k; _rangeKeys)
+			{
+				if ((key & k) == key)
+				{
+					const Range r = _ranges[i];
+					mixin("memcpy(&_components."~field~"[r.first], &arr[src], r.count * T.sizeof);");
+					src += r.count;
+				}
 			}
 		}
 	}
