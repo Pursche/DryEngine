@@ -49,41 +49,41 @@ void Update(float deltaTime) // Will be auto generated
     cameraComponents.Verify();
 
     {
-        enum dependencies = 0;
-        auto out_matWorld = transformComponents.Write!(dependencies, mat4, "matWorld"); // zero overhead
+        enum key = transformComponentID;
+        auto out_matWorld = transformComponents.Write!(key, mat4, "matWorld"); // zero overhead
         DryECS.systems.transformsystem.Update(
-            transformComponents.Read!(dependencies, vec3, "position"), // zero overhead
-            transformComponents.Read!(dependencies, quat, "rotation"), // zero overhead
-            transformComponents.Read!(dependencies, vec3, "scale"), // zero overhead
+            transformComponents.Read!(key, vec3, "position"), // zero overhead
+            transformComponents.Read!(key, quat, "rotation"), // zero overhead
+            transformComponents.Read!(key, vec3, "scale"), // zero overhead
             out_matWorld);
-        transformComponents.Feedback!(dependencies, "matWorld")(out_matWorld); // zero overhead
+        transformComponents.Feedback!(key, "matWorld")(out_matWorld); // zero overhead
     }
 
     {
-        enum dependencies = transformComponentID;
-        auto out_matView = cameraComponents.Write!(dependencies, mat4, "matView");
+        enum key = transformComponentID | cameraComponentID;
+        auto out_matView = cameraComponents.Write!(key, mat4, "matView");
         DryECS.systems.camerasystem.UpdateViewMatrices(
-            transformComponents.Read!(dependencies, mat4, "matWorld"),
+            transformComponents.Read!(key, mat4, "matWorld"),
             out_matView);
-        cameraComponents.Feedback!(dependencies, "matView")(out_matView);
+        cameraComponents.Feedback!(key, "matView")(out_matView);
     }
 
     {
-        enum dependencies = 0;
-        auto out_matProj = cameraComponents.Write!(dependencies, mat4, "matProj"); // zero overhead
+        enum key = cameraComponentID;
+        auto out_matProj = cameraComponents.Write!(key, mat4, "matProj"); // zero overhead
         DryECS.systems.camerasystem.UpdateProjectionMatrices(
-            cameraComponents.Read!(dependencies, float, "fov"), // zero overhead
+            cameraComponents.Read!(key, float, "fov"), // zero overhead
             out_matProj);
-        cameraComponents.Feedback!(dependencies, "matProj")(out_matProj); // zero overhead
+        cameraComponents.Feedback!(key, "matProj")(out_matProj); // zero overhead
     }
 
     {
-        enum dependencies = 0;
-        auto out_matViewProj = cameraComponents.Write!(dependencies, mat4, "matViewProj"); // zero overhead
+        enum key = cameraComponentID;
+        auto out_matViewProj = cameraComponents.Write!(key, mat4, "matViewProj"); // zero overhead
         DryECS.systems.camerasystem.CombineMatrices(
-            cameraComponents.Read!(dependencies, mat4, "matView"), // zero overhead
-            cameraComponents.Read!(dependencies, mat4, "matProj"), // zero overhead
+            cameraComponents.Read!(key, mat4, "matView"), // zero overhead
+            cameraComponents.Read!(key, mat4, "matProj"), // zero overhead
             out_matViewProj);
-        cameraComponents.Feedback!(dependencies, "matViewProj")(out_matViewProj); // zero overhead
+        cameraComponents.Feedback!(key, "matViewProj")(out_matViewProj); // zero overhead
     }
 }

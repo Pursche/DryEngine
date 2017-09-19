@@ -9,7 +9,7 @@ alias ulong EntityID;
 alias ulong EntityType;
 alias ulong SystemKey;
 
-class ComponentStore(Component, size_t componentId)
+class ComponentStore(Component, size_t ownId)
 {
 	struct Range
 	{
@@ -38,15 +38,14 @@ class ComponentStore(Component, size_t componentId)
 	}
 
 	// Access component data for read-write access.
-	public T[] ReadWrite(SystemKey dependencies, T, string field)()
+	public T[] ReadWrite(SystemKey key, T, string field)()
 	{
-		static if (!dependencies)
+		static if (key == ownId)
 		{
 			mixin("return _components."~field~"[0 .. _count];");
 		}
 		else
 		{
-			const SystemKey key = dependencies | componentId;
 			T[] ret;
 			foreach (i, k; _rangeKeys)
 			{
@@ -61,21 +60,20 @@ class ComponentStore(Component, size_t componentId)
 	}
 
 	// Access component data for read-only access.
-	public const(T)[] Read(SystemKey dependencies, T, string field)()
+	public const(T)[] Read(SystemKey key, T, string field)()
 	{
-		return cast(const T[])(ReadWrite!(dependencies, T, field));
+		return cast(const T[])(ReadWrite!(key, T, field));
 	}
 
 	// Access component data for write-only access.
-	public T[] Write(SystemKey dependencies, T, string field)()
+	public T[] Write(SystemKey key, T, string field)()
 	{
-		static if (!dependencies)
+		static if (key == ownId)
 		{
 			mixin("return _components."~field~"[0 .. _count];");
 		}
 		else
 		{
-			const SystemKey key = dependencies | componentId;
 			size_t count = 0;
 			foreach (i, k; _rangeKeys)
 			{
@@ -89,13 +87,12 @@ class ComponentStore(Component, size_t componentId)
 		}
 	}
 
-	public void Feedback(SystemKey dependencies, string field, T)(T[] arr)
+	public void Feedback(size_t key, string field, T)(T[] arr)
 	{
-		static if (!dependencies)
+		static if (key != ownId)
 		{
 			import core.stdc.string;
 
-			const SystemKey key = dependencies | componentId;
 			size_t src = 0;
 			foreach (i, k; _rangeKeys)
 			{
