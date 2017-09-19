@@ -87,7 +87,7 @@ class ComponentStore(Component, size_t ownId)
 		}
 	}
 
-	public void Feedback(size_t key, string field, T)(T[] arr)
+	public void Feedback(SystemKey key, string field, T)(T[] arr)
 	{
 		static if (key != ownId)
 		{
