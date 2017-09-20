@@ -261,6 +261,7 @@ string GenUpdate()
     int id = 0;
     func.put(_GenModuleUpdate!(DryECS.systems.transform)(knownComponents, componentIds));
     func.put(_GenModuleUpdate!(DryECS.systems.camera)(knownComponents, componentIds));
+    func.put(_GenModuleUpdate!(DryECS.systems.lightcull)(knownComponents, componentIds));
 
     func.put("\n}");
 
