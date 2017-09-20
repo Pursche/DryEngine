@@ -49,8 +49,232 @@ void Start() // This will be auto generated
 {
 }
 
+import std.array;
+import std.traits;
+import std.conv;
+import std.algorithm;
+import std.uni;
+
+
+string GetSOANameFromComponent(string component)
+{
+    string SOAName = component[0..1].toLower() ~ component[1..component.length] ~ "s";
+    return SOAName;
+}
+
+int _AddId(ref string[] knownComponents, ref int[] componentIds, string component)
+{
+    knownComponents ~= component;
+    int id = 1 << componentIds.length;
+    componentIds ~= id;
+    return id;
+}
+
+int _GetId(ref string[] knownComponents, ref int[] componentIds, string component)
+{
+    for(int i = 0; i < knownComponents.length; i++)
+    {
+        if (component == knownComponents[i])
+        {
+            return componentIds[i];
+        }
+    }
+    return -1;
+}
+
+int _GetKey(alias System)(ref string[] knownComponents, ref int[] componentIds)
+{
+    int key = 0;
+    alias outputs = getUDAs!(System, Out);
+    alias inputs = getUDAs!(System, In);
+
+    foreach (output; outputs) // Find all outputs used components
+    {
+        string component;
+        string name;
+        SplitFQN(output.variable, component, name);
+
+        string moduleName;
+        string componentName;
+        SplitFQN(component, moduleName, componentName);
+
+        int id = _GetId(knownComponents, componentIds, componentName);
+        if (id == -1)
+        {
+            id = _AddId(knownComponents, componentIds, componentName);
+        }
+        if (!(key & id))
+        {
+            key += id;
+        }
+    }
+
+    foreach (input; inputs) // Find all inputs used components
+    {
+        string component;
+        string name;
+        SplitFQN(input.variable, component, name);
+
+        string moduleName;
+        string componentName;
+        SplitFQN(component, moduleName, componentName);
+
+        int id = _GetId(knownComponents, componentIds, componentName);
+        if (id == -1)
+        {
+            id = _AddId(knownComponents, componentIds, componentName);
+        }
+        if (!(key & id))
+        {
+            key += id;
+        }
+    }
+
+    return key;
+}
+
+string _GenSystemUpdate(alias System)(ref string[] knownComponents, ref int[] componentIds)
+{
+    int key = _GetKey!(System)(knownComponents, componentIds);
+    auto func = appender!string;
+
+    string[] variables;
+    string[] parameters;
+    
+
+    func.put("// " ~ fullyQualifiedName!(System) ~ "\n");
+
+    alias outputs = getUDAs!(System, Out);
+    alias inputs = getUDAs!(System, In);
+
+    foreach (output; outputs) // Find all outputs and map them to their parameters
+    {
+        string component;
+        string name;
+        SplitFQN(output.variable, component, name);
+
+        string moduleName;
+        string componentName;
+        SplitFQN(component, moduleName, componentName);
+
+        string SOAName = GetSOANameFromComponent(componentName);
+
+        func.put("auto out_" ~ name ~ " = " ~ SOAName ~ ".Write!(" ~ to!string(key) ~ ", " ~ typeof(mixin(output.variable)).stringof ~ ", \"" ~ name ~ "\");\n"); // Declare them
+        variables ~= "out_" ~ name;
+        parameters ~= output.parameter;
+        //func.put("auto out_\n");
+    }
+
+    foreach (input; inputs) // Find all inputs and map them to their parameters
+    {
+        string component;
+        string name;
+        SplitFQN(input.variable, component, name);
+
+        string moduleName;
+        string componentName;
+        SplitFQN(component, moduleName, componentName);
+
+        string SOAName = GetSOANameFromComponent(componentName);
+        
+        variables ~= SOAName ~ ".Read!(" ~ to!string(key) ~ ", " ~ typeof(mixin(input.variable)).stringof ~ ", \"" ~ name ~ "\")";
+        parameters ~= input.parameter;
+    }
+
+    string fqn = fullyQualifiedName!System;
+
+    func.put(fqn ~ "(");
+
+    bool first = true;
+    foreach (parameter; ParameterIdentifierTuple!System) // Find the parameter name and match them with the registered ins/outs
+    {
+        bool found = false;
+        for(int i = 0; i < parameters.length; i++)
+        {
+            if (parameter == parameters[i])
+            {
+                if (!first)
+                    func.put(",\n");
+                func.put(variables[i]);
+                found = true;
+                break;
+            }
+        }
+        
+        assert(found, "Error: ECS System " ~ fqn ~ " (" ~ to!string(key) ~ ") has an unbound parameter '" ~ parameter ~ "', this is not allowed");
+        first = false;
+    }
+
+    func.put(");\n");
+
+    foreach (output; outputs) // Feedback outputs into components
+    {
+        string component;
+        string name;
+        SplitFQN(output.variable, component, name);
+
+        string moduleName;
+        string componentName;
+        SplitFQN(component, moduleName, componentName);
+
+        string SOAName = GetSOANameFromComponent(componentName);
+
+        func.put(SOAName ~ ".Feedback!(" ~ to!string(key) ~ ", \"" ~ name ~ "\")(" ~ "out_" ~ name ~ ");\n"); // Declare them
+    }
+
+    func.put("\n");
+
+    return func.data;
+}
+
+string _GenModuleUpdate(alias Module)(ref string[] knownComponents, ref int[] componentIds)
+{   
+    auto func = appender!string;
+
+    string[] doneSystems;
+
+    alias systems = getSymbolsByUDA!(Module, In);
+
+
+    foreach(system; systems)
+    {
+        if (doneSystems.canFind(fullyQualifiedName!(system)))
+            continue;
+        
+        func.put(_GenSystemUpdate!(system)(knownComponents, componentIds));
+
+        doneSystems ~= fullyQualifiedName!(system);
+    }
+    return func.data;
+}
+
+
+
+string GenUpdate()
+{
+    string[] knownComponents;
+    int[] componentIds;
+
+    auto func = appender!string;
+    func.put("{\n");
+
+    int id = 0;
+    func.put(_GenModuleUpdate!(DryECS.systems.transform)(knownComponents, componentIds));
+    func.put(_GenModuleUpdate!(DryECS.systems.camera)(knownComponents, componentIds));
+
+    func.put("\n}");
+
+    // Get the array out:
+    return func.data;
+}
+
+
+
 void Update(float deltaTime) // Will be auto generated
 {
+    pragma(msg, GenUpdate());
+    mixin(GenUpdate());
+
     transformComponents.Verify();
     cameraComponents.Verify();
     pointLightComponents.Verify();
