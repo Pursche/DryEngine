@@ -15,8 +15,15 @@ int main(string[] args)
         transformComponents.Add(transformComponentID);
 	}
 
+    for (size_t i = 0; i < 8; ++i)
+	{
+        transformComponents.Add(transformComponentID | pointLightComponentID);
+        pointLightComponents.Add(transformComponentID | pointLightComponentID);
+	}
+
     transformComponents.Print();
     cameraComponents.Print();
+    pointLightComponents.Print();
 
     Update(0.0f);
 

@@ -1,5 +1,5 @@
-module DryECS.systems.transformsystem;
-import DryECS.components.transformcomponent;
+module DryECS.systems.transform;
+import DryECS.components.transform;
 import DryECS.utils;
 import gl3n.linalg;
 

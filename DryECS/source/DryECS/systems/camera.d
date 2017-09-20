@@ -1,6 +1,6 @@
-module DryECS.systems.camerasystem;
-import DryECS.components.transformcomponent;
-import DryECS.components.cameracomponent;
+module DryECS.systems.camera;
+import DryECS.components.transform;
+import DryECS.components.camera;
 import DryECS.utils;
 
 import gl3n.linalg;

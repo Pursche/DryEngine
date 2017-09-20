@@ -1,4 +1,4 @@
-module DryECS.components.cameracomponent;
+module DryECS.components.camera;
 import gl3n.linalg;
 
 struct CameraComponent
