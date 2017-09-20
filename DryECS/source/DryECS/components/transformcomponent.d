@@ -1,6 +1,9 @@
 module DryECS.components.transformcomponent;
+import DryECS.utils;
 import gl3n.linalg;
 
+
+@Component
 struct TransformComponent
 {
     vec3 position = vec3(0,0,0);

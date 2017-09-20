@@ -1,16 +1,20 @@
 module DryECS.utils;
 
 import gl3n.linalg;
+import std.traits;
+
+struct Component{}
+struct System{}
 
 struct In(alias Variable)
 {
-    alias variable = Variable;
+    enum variable = fullyQualifiedName!(Variable);
     string parameter;
 }
 
-struct Out(alias Variable, )
+struct Out(alias Variable)
 {
-    alias variable = Variable;
+    enum variable = fullyQualifiedName!(Variable);
     string parameter;
 }
 
@@ -55,4 +59,12 @@ template SOA(Struct)
             }
         }
     }
+}
+
+import std.string;
+void SplitFQN(string fqn, out string namespace, out string name)
+{
+    int index = cast(int)fqn.lastIndexOf('.');
+    namespace = fqn[0 .. index];
+    name = fqn[index+1 .. fqn.length];
 }

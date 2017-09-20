@@ -6,7 +6,7 @@ import DryECS.utils;
 import gl3n.linalg;
 
 @In!(TransformComponent.matWorld)("matWorld")
-@In!(CameraComponent.matView)("matView")
+@Out!(CameraComponent.matView)("matView")
 void UpdateViewMatrices(
     const mat4[] matWorld,
     mat4[] matView)
@@ -18,7 +18,7 @@ void UpdateViewMatrices(
 }
 
 @In!(CameraComponent.fov)("fov")
-@Out!(CameraComponent.matProj)("matView")
+@Out!(CameraComponent.matProj)("matProj")
 void UpdateProjectionMatrices(
     const float[] fov,
     mat4[] matProj)
@@ -33,6 +33,7 @@ void UpdateProjectionMatrices(
 
 @In!(CameraComponent.matView)("matView")
 @In!(CameraComponent.matProj)("matProj")
+@Out!(CameraComponent.matViewProj)("matViewProj")
 void CombineMatrices(
     const mat4[] matView,
     const mat4[] matProj,
