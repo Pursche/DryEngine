@@ -10,5 +10,5 @@ struct TransformComponent
     quat rotation = quat(0,0,0,1);
     vec3 scale = vec3(1,1,1);
 
-    mat4 matWorld;
+    @Internal mat4 matWorld;
 }

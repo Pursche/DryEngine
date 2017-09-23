@@ -27,13 +27,11 @@ class ComponentStore(Component, size_t ownId)
 	private EntityType[] _rangeKeys;
 	private Range[] _ranges;
 
-	private SOA!(Component) _components;
-	private EntityID[] _entities;
+	public SOA!(Component) _components;
 	private size_t _count = 0;
 
 	public this(size_t capacity)
 	{
-		_entities = new EntityID[capacity];
 		_components = SOA!(Component)(capacity);
 	}
 

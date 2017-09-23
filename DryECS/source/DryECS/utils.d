@@ -5,6 +5,7 @@ import std.traits;
 
 struct Component{}
 struct System{}
+struct Internal{}
 
 struct In(alias Variable)
 {
@@ -28,6 +29,10 @@ struct OutAll(alias Variable)
 {
     alias variable = Variable;
     string parameter;
+}
+
+struct Requires(alias component)
+{
 }
 
 template SOA(Struct) 

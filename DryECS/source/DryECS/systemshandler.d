@@ -294,7 +294,7 @@ void Update(float deltaTime) // Will be auto generated
     {
         enum key = transformComponentID | cameraComponentID;
         auto out_matView = cameraComponents.Write!(key, mat4, "matView");
-        DryECS.systems.camera.UpdateViewMatrices(
+        DryECS.systems.camera.CalcViewMatrix(
             transformComponents.Read!(key, mat4, "matWorld"),
             out_matView);
         cameraComponents.Feedback!(key, "matView")(out_matView);
@@ -303,7 +303,7 @@ void Update(float deltaTime) // Will be auto generated
     {
         enum key = cameraComponentID;
         auto out_matProj = cameraComponents.Write!(key, mat4, "matProj"); // zero overhead
-        DryECS.systems.camera.UpdateProjectionMatrices(
+        DryECS.systems.camera.CalcProjectionMatrix(
             cameraComponents.Read!(key, float, "fov"), // zero overhead
             out_matProj);
         cameraComponents.Feedback!(key, "matProj")(out_matProj); // zero overhead
@@ -325,6 +325,6 @@ void Update(float deltaTime) // Will be auto generated
         DryECS.systems.lightcull.Cull(
             transformComponents.Read!(key0, vec3, "position"),
             pointLightComponents.Read!(key0, float, "radius"),
-            cameraComponents.Read!(key1, mat4, "matViewProj"));
+            cameraComponents.Read!(key1, mat4, "matViewProj"));// zero overhead
     }
 }

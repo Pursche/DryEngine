@@ -1,13 +1,15 @@
 module DryECS.components.camera;
+import DryECS.components.transform;
 import DryECS.utils;
 import gl3n.linalg;
 
 @Component
+@Requires!TransformComponent
 struct CameraComponent
 {
-    float fov = 0.6f;
+    float fov = 75;
 
-    mat4 matView;
-    mat4 matProj;
-    mat4 matViewProj;
+    @Internal mat4 matView;
+    @Internal mat4 matProj;
+    @Internal mat4 matViewProj;
 }
