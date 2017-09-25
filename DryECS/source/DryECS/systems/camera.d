@@ -7,7 +7,7 @@ import gl3n.linalg;
 
 @In!(TransformComponent.matWorld)("matWorld")
 @Out!(CameraComponent.matView)("matView")
-void CalcViewMatrix(
+void UpdateViewMatrices(
     const mat4[] matWorld,
     mat4[] matView)
 {
@@ -19,7 +19,7 @@ void CalcViewMatrix(
 
 @In!(CameraComponent.fov)("fov")
 @Out!(CameraComponent.matProj)("matProj")
-void CalcProjectionMatrix(
+void UpdateProjectionMatrices(
     const float[] fov,
     mat4[] matProj)
 {

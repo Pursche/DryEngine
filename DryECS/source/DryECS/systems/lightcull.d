@@ -7,9 +7,9 @@ import DryECS.components.pointlight;
 
 import gl3n.linalg;
 
-@In!(TransformComponent.position)("lightPos")
-@In!(PointLightComponent.radius)("lightRadius")
-@In!(CameraComponent.matViewProj)("matViewProj")
+@In!(TransformComponent.position)("lightPos", 0)
+@In!(PointLightComponent.radius)("lightRadius", 0)
+@In!(CameraComponent.matViewProj)("matViewProj", 1)
 void Cull(
     const vec3[] lightPos, 
     const float[] lightRadius,

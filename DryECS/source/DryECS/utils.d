@@ -11,12 +11,14 @@ struct In(alias Variable)
 {
     enum variable = fullyQualifiedName!(Variable);
     string parameter;
+    int dependencyGroup = 0;
 }
 
 struct Out(alias Variable)
 {
     enum variable = fullyQualifiedName!(Variable);
     string parameter;
+    int dependencyGroup = 0;
 }
 
 struct InAll(alias Variable)
