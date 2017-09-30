@@ -14,5 +14,11 @@
 	},
 	"importPaths": [
 		"./../DryEngine/source"
+	],
+	"preBuildCommands-windows": [
+		"precompiler"
+	],
+	"preBuildCommands-linux": [
+		"./../precompiler.sh"
 	]
 }

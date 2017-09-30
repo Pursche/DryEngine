@@ -8,15 +8,8 @@ import std.stdio;
 import DryECS.utils;
 import gl3n.linalg;
 
-// This will probably have to be generated with a short python script or a D precompiler since this module doesn't know about the other modules at compiletime
-import DryECS.components.transform;
-import DryECS.components.camera;
-import DryECS.components.pointlight;
-import DryECS.components.mesh;
-
-import DryECS.systems.transform;
-import DryECS.systems.camera;
-import DryECS.systems.lightcull;
+// This file has all our generated includes
+import DryECS.includes;
 
 enum transformComponentID  = (1 << 0);
 enum cameraComponentID = (1 << 1);
@@ -85,9 +78,8 @@ int _GetId(ref string[] knownComponents, ref int[] componentIds, string componen
     return -1;
 }
 
-int _GetKey(alias System)(ref string[] knownComponents, ref int[] componentIds)
+string _ParseKeys(alias System)(ref string[] knownComponents, ref int[] componentIds, out int[int] keys)
 {
-    int key = 0;
     alias outputs = getUDAs!(System, Out);
     alias inputs = getUDAs!(System, In);
 
@@ -106,9 +98,15 @@ int _GetKey(alias System)(ref string[] knownComponents, ref int[] componentIds)
         {
             id = _AddId(knownComponents, componentIds, componentName);
         }
-        if (!(key & id))
+
+        int key = output.dependencyGroup;
+        if (!(key in keys))
         {
-            key += id;
+            keys[key] = id;
+        }
+        else if (!(keys[key] & id))
+        {
+            keys[key] += id;
         }
     }
 
@@ -127,22 +125,31 @@ int _GetKey(alias System)(ref string[] knownComponents, ref int[] componentIds)
         {
             id = _AddId(knownComponents, componentIds, componentName);
         }
-        if (!(key & id))
+
+        int key = input.dependencyGroup;
+        if (!(key in keys))
         {
-            key += id;
+            keys[key] = id;
+        }
+        else if (!(keys[key] & id))
+        {
+            keys[key] += id;
         }
     }
 
-    return key;
+    return "";
 }
 
 string _GenSystemUpdate(alias System)(ref string[] knownComponents, ref int[] componentIds)
 {
-    int key = _GetKey!(System)(knownComponents, componentIds);
+    //int key = _GetKey!(System)(knownComponents, componentIds);
     auto func = appender!string;
-
+    int[int] keys;
+    _ParseKeys!(System)(knownComponents, componentIds, keys);
+    
     string[] variables;
     string[] parameters;
+    
     
 
     func.put("// " ~ fullyQualifiedName!(System) ~ "\n");
@@ -152,6 +159,7 @@ string _GenSystemUpdate(alias System)(ref string[] knownComponents, ref int[] co
 
     foreach (output; outputs) // Find all outputs and map them to their parameters
     {
+        int key = keys[output.dependencyGroup];
         string component;
         string name;
         SplitFQN(output.variable, component, name);
@@ -170,6 +178,7 @@ string _GenSystemUpdate(alias System)(ref string[] knownComponents, ref int[] co
 
     foreach (input; inputs) // Find all inputs and map them to their parameters
     {
+        int key = keys[input.dependencyGroup];
         string component;
         string name;
         SplitFQN(input.variable, component, name);
@@ -204,7 +213,7 @@ string _GenSystemUpdate(alias System)(ref string[] knownComponents, ref int[] co
             }
         }
         
-        assert(found, "Error: ECS System " ~ fqn ~ " (" ~ to!string(key) ~ ") has an unbound parameter '" ~ parameter ~ "', this is not allowed");
+        assert(found, "Error: ECS System " ~ fqn ~ " has an unbound parameter '" ~ parameter ~ "', this is not allowed");
         first = false;
     }
 
@@ -212,6 +221,7 @@ string _GenSystemUpdate(alias System)(ref string[] knownComponents, ref int[] co
 
     foreach (output; outputs) // Feedback outputs into components
     {
+        int key = keys[output.dependencyGroup];
         string component;
         string name;
         SplitFQN(output.variable, component, name);
@@ -297,7 +307,7 @@ void Update(float deltaTime) // Will be auto generated
     {
         enum key = transformComponentID | cameraComponentID;
         auto out_matView = cameraComponents.Write!(key, mat4, "matView");
-        DryECS.systems.camera.CalcViewMatrix(
+        DryECS.systems.camera.UpdateViewMatrices(
             transformComponents.Read!(key, mat4, "matWorld"),
             out_matView);
         cameraComponents.Feedback!(key, "matView")(out_matView);
@@ -306,7 +316,7 @@ void Update(float deltaTime) // Will be auto generated
     {
         enum key = cameraComponentID;
         auto out_matProj = cameraComponents.Write!(key, mat4, "matProj"); // zero overhead
-        DryECS.systems.camera.CalcProjectionMatrix(
+        DryECS.systems.camera.UpdateProjectionMatrices(
             cameraComponents.Read!(key, float, "fov"), // zero overhead
             out_matProj);
         cameraComponents.Feedback!(key, "matProj")(out_matProj); // zero overhead

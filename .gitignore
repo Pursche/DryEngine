@@ -23,3 +23,6 @@ docs/
 
 # Code coverage
 *.lst
+
+# Generated d source files
+*.gen.d
