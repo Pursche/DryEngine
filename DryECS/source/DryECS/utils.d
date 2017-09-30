@@ -1,6 +1,9 @@
 module DryECS.utils;
 
 import gl3n.linalg;
+import DryEngine.render.mesh;
+import DryEngine.render.material;
+import DryECS.components.mesh;
 import std.traits;
 
 struct Component{}

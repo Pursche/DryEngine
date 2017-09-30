@@ -1,4 +1,4 @@
-module DryEngine.ecs.libutil;
+module DryGame.ecs.libutil;
 import core.runtime;
 import core.demangle;
 import std.string;
@@ -10,6 +10,8 @@ struct Library
 
     version(linux)
     {
+        import core.sys.posix.dlfcn;
+        
         T loadFunc(T:FT*, FT)(string fqn) if(is(FT==function))
         {
             immutable m = mangle!FT(fqn);
@@ -19,7 +21,7 @@ struct Library
         T loadFunc(T:FT*, string fqn, FT)() if(is(FT==function))
         {
             static immutable m = mangle!FT(fqn);
-            return cast(T) dlsym(_handle, m.ptr);
+            return cast(T) dlsym(_handle, toStringz(m));
         }
 
         T* loadSym(T)(string fqn)
@@ -31,7 +33,7 @@ struct Library
         T* loadSym(T, string fqn)()
         {
             static immutable m = mangle!T(fqn);
-            return cast(T*) dlsym(_handle, m.ptr);
+            return cast(T*) dlsym(_handle, toStringz(m));
         }
     }
 
@@ -42,7 +44,7 @@ struct Library
         T loadFunc(T:FT*, string fqn, FT)() if(is(FT==function))
         {
             static immutable m = mangle!FT(fqn);
-            return cast(T) GetProcAddress(_handle, m.ptr);
+            return cast(T) GetProcAddress(_handle, toStringz(m));
         }
 
         T* loadSym(T)(string fqn)
@@ -54,7 +56,7 @@ struct Library
         T* loadSym(T, string fqn)()
         {
             static immutable m = mangle!T(fqn);
-            return cast(T*) GetProcAddress(_handle, m.ptr);
+            return cast(T*) GetProcAddress(_handle, tpStringz(m));
         }
     }
 }

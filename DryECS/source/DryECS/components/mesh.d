@@ -4,9 +4,10 @@ import DryECS.utils;
 
 import gl3n.linalg;
 
-//import DryEngine.render.mesh;
-//import DryEngine.render.material;
+import DryEngine.render.mesh;
+import DryEngine.render.material;
 
+//todo: move
 struct AxisAlignedBox
 {
     vec2 min;
@@ -17,8 +18,8 @@ struct AxisAlignedBox
 @Requires!TransformComponent
 struct MeshComponent
 {
-    //Mesh* mesh;
-    //Material* material;
+    Mesh* mesh = null;
+    Material* material = null;
 
     @Internal AxisAlignedBox aabb;
 }

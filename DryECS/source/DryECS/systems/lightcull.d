@@ -13,7 +13,7 @@ import gl3n.linalg;
 void Cull(
     const vec3[] lightPos, 
     const float[] lightRadius,
-    const mat4[] matViewProj)
+    const mat4[] matViewProj) pure
 {
     const size_t cameraCount = matViewProj.length;
     const size_t lightCount = lightPos.length;

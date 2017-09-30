@@ -8,24 +8,25 @@
 	"copyright": "Copyright © 2017, Markus Pursche",
 	"license": "MIT",
 	"targetType": "executable",
+	"targetPath": "./bin",
 	"dependencies": {
-		"directx-d": "~>0.12.0",
 		"gl3n": "~>1.3.1",
 		"drygame:dryengine": "*"
 	},
-	"libs": [
-		"dxgi",
-		"d3d11"
-	],
 	"subPackages": [
 		"./DrySTL/",
-		"./DryEngine/",
-		"./DryECS/"
+		"./DryEngine/"
 	],
 	"excludedSourceFiles-windows": [
 		"linux/*"
 	],
 	"excludedSourceFiles-linux": [
-		"windows/*"
+		"*windows/*"
+	],
+	"preBuildCommands-windows":[
+		"buildecs"
+	],
+	"preBuildCommands-linux": [
+		"./buildecs.sh"
 	]
 }

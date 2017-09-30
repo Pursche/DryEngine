@@ -106,19 +106,22 @@ class ComponentStore(Component, size_t ownId)
 
 	public void Add()(EntityType type)
 	{
-		const size_t rangeIdx = FindRange(type);
-		for (size_t i = signed(_ranges.length) - 1; i > rangeIdx; --i)
+		if (type & ownId)
 		{
-			Range* r = &_ranges[i];
-			auto last = r.first + max(0, signed(r.count) - 1);
-			_components.Copy(r.first, last);
-			++r.first;
+			const size_t rangeIdx = FindRange(type);
+			for (size_t i = signed(_ranges.length) - 1; i > rangeIdx; --i)
+			{
+				Range* r = &_ranges[i];
+				auto last = r.first + max(0, signed(r.count) - 1);
+				_components.Copy(r.first, last);
+				++r.first;
+			}
+
+			Range* r = &_ranges[rangeIdx];
+			++r.count;
+
+			++_count;
 		}
-
-		Range* r = &_ranges[rangeIdx];
-		++r.count;
-
-		++_count;
 	}
 
 	// Returns the index of the range associated with a key.

@@ -10,7 +10,7 @@ import gl3n.linalg;
 void Update(const vec3[] positions, 
     const quat[] rotations, 
     const vec3[] scales,
-    mat4[] worldMatrices)
+    mat4[] worldMatrices) pure
 {
     for (size_t i = 0; i < positions.length; ++i)
     {
@@ -18,7 +18,7 @@ void Update(const vec3[] positions,
     }
 }
 
-mat4 Transform(vec3 pos, quat rot, vec3 scale)
+mat4 Transform(vec3 pos, quat rot, vec3 scale) pure
 {
     return mat4.scaling(scale.x, scale.y, scale.z) * mat4.translation(pos);
 }

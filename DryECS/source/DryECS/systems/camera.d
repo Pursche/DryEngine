@@ -9,7 +9,7 @@ import gl3n.linalg;
 @Out!(CameraComponent.matView)("matView")
 void CalcViewMatrix(
     const mat4[] matWorld,
-    mat4[] matView)
+    mat4[] matView) pure
 {
     for (size_t i = 0; i < matWorld.length; ++i)
     {
@@ -21,7 +21,7 @@ void CalcViewMatrix(
 @Out!(CameraComponent.matProj)("matProj")
 void CalcProjectionMatrix(
     const float[] fov,
-    mat4[] matProj)
+    mat4[] matProj) pure
 {
     const uint width = 640;
     const uint height = 480;
@@ -37,7 +37,7 @@ void CalcProjectionMatrix(
 void CombineMatrices(
     const mat4[] matView,
     const mat4[] matProj,
-    mat4[] matViewProj)
+    mat4[] matViewProj) pure
 {
     for (size_t i = 0; i < matView.length; ++i)
     {

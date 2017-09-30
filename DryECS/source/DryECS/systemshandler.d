@@ -2,17 +2,6 @@ module DryECS.systemshandler;
 import DryECS.componentstore;
 import std.stdio;
 
-void LoadECS() // This and unload is just for having a fake init point at the moment, will be replaced when we can actually use a dll
-{
-    writeln("Loaded fake DLL");
-    Init();
-}
-
-void UnloadECS()
-{
-    writeln("Unloaded fake DLL");
-}
-
 // Autogeneration begins
 
 // These should be here no matter what components we have etc
@@ -23,6 +12,7 @@ import gl3n.linalg;
 import DryECS.components.transform;
 import DryECS.components.camera;
 import DryECS.components.pointlight;
+import DryECS.components.mesh;
 
 import DryECS.systems.transform;
 import DryECS.systems.camera;
@@ -31,22 +21,35 @@ import DryECS.systems.lightcull;
 enum transformComponentID  = (1 << 0);
 enum cameraComponentID = (1 << 1);
 enum pointLightComponentID = (1 << 2);
+enum meshComponentID = (1 << 3);
 
-// Do this for each component found, 32 is how many we can max have
-// 1 is how many unique systems (in terms of key) use this component
 ComponentStore!(TransformComponent, transformComponentID) transformComponents;
 ComponentStore!(CameraComponent, cameraComponentID) cameraComponents;
 ComponentStore!(PointLightComponent, pointLightComponentID) pointLightComponents;
+ComponentStore!(MeshComponent, meshComponentID) meshComponents;
 
-void Init() // Will be auto generated
+export void Init() // Will be auto generated
 {
-    transformComponents = new ComponentStore!(TransformComponent, transformComponentID)(64);
-    cameraComponents = new ComponentStore!(CameraComponent, cameraComponentID)(32);
-    pointLightComponents = new ComponentStore!(PointLightComponent, pointLightComponentID)(1024);
+
+    transformComponents = new typeof(transformComponents)(64);
+    cameraComponents = new typeof(cameraComponents)(32);
+    pointLightComponents = new typeof(pointLightComponents)(1024);
+    meshComponents = new typeof(meshComponents)(1024);
 }
 
-void Start() // This will be auto generated
+export EntityID CreateEntity(EntityType type)
 {
+    EntityID id = 0;
+    _RegisterEntity(type);
+    return 0;//todo
+}
+
+// todo: auto-generate
+void _RegisterEntity(EntityType type)
+{
+    transformComponents.Add(type);
+    cameraComponents.Add(type);
+    pointLightComponents.Add(type);
 }
 
 import std.array;
@@ -273,7 +276,7 @@ string GenUpdate()
 
 void Update(float deltaTime) // Will be auto generated
 {
-    pragma(msg, GenUpdate());
+    //pragma(msg, GenUpdate());
     mixin(GenUpdate());
 
     transformComponents.Verify();
