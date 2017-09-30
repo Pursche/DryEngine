@@ -19,14 +19,8 @@ void UnloadECS()
 import DryECS.utils;
 import gl3n.linalg;
 
-// This will probably have to be generated with a short python script or a D precompiler since this module doesn't know about the other modules at compiletime
-import DryECS.components.transform;
-import DryECS.components.camera;
-import DryECS.components.pointlight;
-
-import DryECS.systems.transform;
-import DryECS.systems.camera;
-import DryECS.systems.lightcull;
+// This file has all our generated includes
+import DryECS.systemincludes;
 
 enum transformComponentID  = (1 << 0);
 enum cameraComponentID = (1 << 1);
@@ -290,7 +284,7 @@ string GenUpdate()
 
 void Update(float deltaTime) // Will be auto generated
 {
-    pragma(msg, GenUpdate());
+    //pragma(msg, GenUpdate());
     mixin(GenUpdate());
 
     transformComponents.Verify();

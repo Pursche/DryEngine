@@ -1,0 +1,11 @@
+{
+	"name": "dryprecompiler",
+	"authors": [
+		"Markus Pursche",
+		"Andreas Vennström"
+	],
+	"description": "A precompiler for dryengine",
+	"copyright": "Copyright © 2017, Markus Pursche",
+	"license": "MIT",
+	"targetType": "executable"
+}
