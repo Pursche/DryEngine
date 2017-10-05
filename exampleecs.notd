@@ -1,0 +1,59 @@
+abstract struct Transform
+{
+    vec3 position;
+    quat rotation;
+    vec3 scale;
+    mat4 matWorld;
+}
+
+abstract struct Camera
+{
+    float fov;
+    mat4 matView;
+    mat4 matProj;
+}
+
+@In(Transform.position, 'positions')
+@In(Transform.rotation, 'rotations')
+@In(Transform.scale, 'scales')
+@Out(Transform.matWorld, 'worldMatrices')
+class TransformSystem
+{
+    void Update(
+        size_t count,
+        const vec3[] positions, 
+        const quat[] rotations, 
+        const vec3[] scales,
+        mat4[] worldMatrices)
+    {
+        for (size_t i = 0; i < count; ++i)
+        {
+            worldMatrices[i] = Transform(positions[i], rotations[i], scales[i]);
+        }
+    }
+}
+
+@In(Transform.matWorld, 'worldMatrices')
+@In(Camera.fov, 'fovs')
+@Out(Camera.matView, 'viewMatrices')
+@Out(Camera.matProj, 'projMatrices')
+class CameraSystem
+{
+    void Update(
+        size_t count,
+        const mat4[] worldMatrices, 
+        const float[] fovs,
+        mat4[] viewMatrices, 
+        mat4[] projMatrices)
+    {
+        for (size_t i = 0; i < count; ++i)
+        {
+            viewMatrices[i] = worldMatrices[i].Inverse();
+        }
+
+        for (size_t i = 0; i < count; ++i)
+        {
+            projMatrices[i] = Perspective(fovs[i]);
+        }
+    }
+}

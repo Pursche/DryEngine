@@ -13,6 +13,7 @@
 
 # Executables
 *.exe
+bin/
 
 # DUB
 .dub
@@ -23,6 +24,5 @@ docs/
 # Code coverage
 *.lst
 
-# Binaries
-./dryengine
-./drygame
+# Generated d source files
+*.gen.d

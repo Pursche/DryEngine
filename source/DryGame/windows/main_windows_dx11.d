@@ -1,3 +1,5 @@
+module DryGame.linux.main_windows_dx11;
+
 import core.sys.windows.windows;
 import core.runtime;
 
@@ -7,7 +9,7 @@ import std.string;
 import directx.dxgi;
 import directx.d3d11;
 
-import DryEngine.core.system;
+import DryGame.core.system;
 import DryEngine.render.dx11.renderer_dx11;
 
 IDXGIFactory g_dxgiFactory;//yolo
@@ -90,6 +92,7 @@ int DryMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 	System system = new System(null);
 
 	ShowWindow(hwnd, nCmdShow);
+
 	while (IsWindowVisible(hwnd))
 	{
 		MSG msg;

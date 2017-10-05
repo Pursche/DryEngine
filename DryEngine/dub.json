@@ -8,8 +8,8 @@
 	"copyright": "Copyright © 2017, Markus Pursche",
 	"license": "MIT",
 	"targetType": "library",
+	"targetPath": "./../bin",
 	"dependencies": {
-		"directx-d": "~>0.12.0",
 		"gl3n": "~>1.3.1",
 		"drygame:drystl": "*"
 	},
@@ -17,6 +17,7 @@
 		"*_gl.d"
 	],
 	"excludedSourceFiles-linux": [
-		"*_dx11.d"
+		"*_dx11.d",
+		"*_gl.d"
 	]
 }
