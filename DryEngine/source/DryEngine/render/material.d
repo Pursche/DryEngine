@@ -2,6 +2,10 @@ module DryEngine.render.material;
 
 import gl3n.linalg;
 
+import std.typecons;
+
+alias MaterialHandle = Typedef!(uint, 0xffffffff);
+
 public struct Material
 {
     public MaterialDef* def;

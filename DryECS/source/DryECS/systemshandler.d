@@ -1,6 +1,7 @@
 module DryECS.systemshandler;
 import DryECS.componentstore;
 import std.stdio;
+import std.string;
 
 // Autogeneration begins
 
@@ -9,7 +10,7 @@ import DryECS.utils;
 import gl3n.linalg;
 
 // This file has all our generated includes
-import DryECS.includes;
+import DryECS.__generated__.includes;
 
 enum transformComponentID  = (1 << 0);
 enum cameraComponentID = (1 << 1);
@@ -23,11 +24,18 @@ ComponentStore!(MeshComponent, meshComponentID) meshComponents;
 
 export void Init() // Will be auto generated
 {
-
-    transformComponents = new typeof(transformComponents)(64);
-    cameraComponents = new typeof(cameraComponents)(32);
-    pointLightComponents = new typeof(pointLightComponents)(1024);
-    meshComponents = new typeof(meshComponents)(1024);
+    try
+    {
+        transformComponents = new typeof(transformComponents)(64);
+        cameraComponents = new typeof(cameraComponents)(32);
+        pointLightComponents = new typeof(pointLightComponents)(1024);
+        meshComponents = new typeof(meshComponents)(1024);
+    }
+    catch (Throwable e) 
+    {
+        import core.sys.windows.windows;
+        MessageBoxA(null, e.msg.toStringz(), null, MB_ICONERROR);
+    }
 }
 
 export EntityID CreateEntity(EntityType type)
@@ -284,7 +292,7 @@ string GenUpdate()
 
 
 
-void Update(float deltaTime) // Will be auto generated
+export void Update(float deltaTime) // Will be auto generated
 {
     //pragma(msg, GenUpdate());
     mixin(GenUpdate());

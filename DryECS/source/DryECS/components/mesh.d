@@ -1,11 +1,12 @@
 module DryECS.components.mesh;
-import DryECS.components.transform;
-import DryECS.utils;
 
-import gl3n.linalg;
+public import DryECS.components.transform;
+public import DryECS.utils;
 
-import DryEngine.render.mesh;
-import DryEngine.render.material;
+public import gl3n.linalg;
+
+public import DryEngine.render.mesh;
+public import DryEngine.render.material;
 
 //todo: move
 struct AxisAlignedBox
@@ -18,8 +19,8 @@ struct AxisAlignedBox
 @Requires!TransformComponent
 struct MeshComponent
 {
-    Mesh* mesh = null;
-    Material* material = null;
+    MeshHandle mesh = 0xffffffff;
+    MaterialHandle material = 0xffffffff;
 
     @Internal AxisAlignedBox aabb;
 }

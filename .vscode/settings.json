@@ -1,3 +1,4 @@
 {
-    "d.dubCompiler": "ldc2"
+    "d.dubCompiler": "ldc2",
+    "editor.tabSize": 4
 }

@@ -4,8 +4,7 @@ import std.stdio;
 import std.string;
 import std.exception;
 
-version(linux)
-{
+/*
 import DryGame.ecs.libutil;
 
 Library lib;
@@ -14,34 +13,40 @@ public void LoadECS()
 {
     UnloadECS();
 
-    printf("Loading ECS... \n");
+    writeln("Loading ECS Library...");
     version(linux)
     {
-        lib = enforce(loadLib("./libdryecs.so"));//todo
+        lib = enforce(loadLib("./libdryecs.so"));
     }
     version(Windows)
     {
-        lib = enforce(loadLib("dryecs"));
+        lib = enforce(loadLib("dryecs.dll"));
     }
 
-    printf("Done\n");
+    writeln("Done");
     
     auto Init = lib.loadFunc!(void function(), "DryECS.systemshandler.Init");
     Update = lib.loadFunc!(typeof(Update), "DryECS.systemshandler.Update");
     CreateEntity = lib.loadFunc!(typeof(CreateEntity), "DryECS.systemshandler.CreateEntity");
 
-    writeln(Init);
-    writeln(Update);
-    writeln(CreateEntity);
+    writefln("Init = %X", Init);
+    writefln("Update = %X", Update);
+    writefln("CreateEntity = %X", CreateEntity);
 
     Init();
+
+    import core.sys.windows.windows;
+    import std.string;
+    string msg = "fisk";
+    DWORD charsWritten;
+    WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), msg.toStringz(), cast(uint)msg.length, &charsWritten, null);
 }
 
 public void UnloadECS()
 {
     if (lib)
     {
-        writeln("Unloading ECS...");
+        writeln("Unloading ECS Library...");
         unloadLib(lib);
         writeln("Done");
         lib = null;
@@ -50,31 +55,25 @@ public void UnloadECS()
 
 public void function(float) Update;
 public size_t function(size_t) CreateEntity;
-
-}
-
-version(Windows)
-{
+*/
 
 import DryECS.systemshandler;
-void LoadECS()
+
+public void LoadECS()
 {
-    DryECS.systemshandler.LoadECS();
+    DryECS.systemshandler.Init();
 }
 
-void UnloadECS()
+public void UnloadECS()
 {
-    DryECS.systemshandler.UnloadECS();
 }
 
-void Start()
+public void Update(float dt)
 {
-    DryECS.systemshandler.Start();
+    DryECS.systemshandler.Update(dt);
 }
 
-void Update(float deltaTime)
+public size_t CreateEntity(size_t key)
 {
-    DryECS.systemshandler.Update(deltaTime);
-}
-
+    return DryECS.systemshandler.CreateEntity(key);
 }

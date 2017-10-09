@@ -42,11 +42,16 @@ void Run()
         imports ~= name.GetModule().GetImport();
     }
 
-    string includePath = exePath.PathUp().PathUp() ~ dirSeparator ~ buildPath("DryECS", "source", "DryECS", "includes.gen.d");
+    string includeDir = exePath.PathUp().PathUp() ~ dirSeparator ~ buildPath("DryECS", "source", "DryECS", "__generated__");
+    if (!exists(includeDir))
+    {
+        mkdir(includeDir);
+    }
+    string includePath = buildPath(includeDir, "includes.d");
     File includeFile = File(includePath, "w");
-    includeFile.writeln("module DryECS.includes;\n");
+    includeFile.writeln("module DryECS.__generated__.includes;\n");
     foreach(string imp; imports)
-     {
-         includeFile.writeln(imp);
-     }
+    {
+        includeFile.writeln(imp);
+    }
 }

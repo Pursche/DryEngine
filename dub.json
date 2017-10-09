@@ -11,22 +11,22 @@
 	"targetPath": "./bin",
 	"dependencies": {
 		"gl3n": "~>1.3.1",
-		"drygame:dryengine": "*"
+		"drygame:dryengine": "*",
+		"drygame:dryecs": "*"
 	},
 	"subPackages": [
 		"./DrySTL/",
-		"./DryEngine/"
+		"./DryEngine/",
+		"./DryECS/"
+	],
+	"libs-windows": [
+		"dxgi",
+		"d3d11"
 	],
 	"excludedSourceFiles-windows": [
-		"linux/*"
+		"*linux/*"
 	],
 	"excludedSourceFiles-linux": [
 		"*windows/*"
-	],
-	"preBuildCommands-windows":[
-		"buildecs"
-	],
-	"preBuildCommands-linux": [
-		"./buildecs.sh"
 	]
 }

@@ -13,7 +13,7 @@ class Renderer_GL : Renderer
         _resources = new GLuint[1024];
     }
 
-    override protected bool InitTexture(RenderResourceHandle handle, const RenderTextureDesc desc)
+    override protected RenderResourceHandle _CreateTexture(const RenderTextureDesc desc)
     {
         GLuint tex;
         glGenTextures(1, &tex);
@@ -46,11 +46,12 @@ class Renderer_GL : Renderer
                 break;
         }
 
+        RenderResourceHandle handle = 0;//todo
         _resources[cast(size_t)(handle)] = tex;
-        return true;
+        return handle;
     }
 
-    override protected bool InitBuffer(RenderResourceHandle handle, const RenderBufferDesc desc)
+    override protected RenderResourceHandle _CreateBuffer(const RenderBufferDesc desc)
     {
         GLuint buffer;
         glGenBuffers(1, &buffer);
@@ -72,7 +73,8 @@ class Renderer_GL : Renderer
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
         glBufferData(GL_ARRAY_BUFFER, desc.size, desc.data, usage);
 
+        RenderResourceHandle handle = 0;//todo
         _resources[cast(size_t)(handle)] = buffer;
-        return true;
+        return handle;
     }
 }

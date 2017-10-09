@@ -128,7 +128,7 @@ LRESULT DryProc(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam)
 		{
 			const CREATESTRUCT* create = cast(CREATESTRUCT*)(lParam);
 			Window* window = cast(Window*)(create.lpCreateParams);
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, cast(long)(window));
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, cast(int)(window));
 
 			DXGI_SWAP_CHAIN_DESC scd;
 			scd.BufferDesc.Width = 16;

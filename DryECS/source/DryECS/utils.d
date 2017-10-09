@@ -6,6 +6,8 @@ import DryEngine.render.material;
 import DryECS.components.mesh;
 import std.traits;
 
+import DryECS.__generated__.includes;
+
 struct Component{}
 struct System{}
 struct Internal{}

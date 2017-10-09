@@ -1,6 +1,7 @@
 module DryECS.components.transform;
-import DryECS.utils;
-import gl3n.linalg;
+
+public import DryECS.utils;
+public import gl3n.linalg;
 
 
 @Component

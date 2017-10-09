@@ -5,6 +5,10 @@ import DryEngine.render.renderer;
 
 import gl3n.linalg;
 
+public import std.typecons;
+
+alias MeshHandle = Typedef!(uint, 0xffffffff);
+
 // todo: what about dynamic meshes???
 class Mesh
 {
@@ -24,7 +28,7 @@ class Mesh
             desc.size = pos.sizeof;
             desc.bindFlags = RenderResourceBindFlag.VertexBuffer;
             desc.usage = RenderResourceUsage.Immutable;
-            _positionBuffer = Renderer.Get().CreateBuffer(desc);
+            _positionBuffer = Renderer.CreateBuffer(desc);
         }
 
         //{
@@ -42,7 +46,7 @@ class Mesh
             desc.size = indices.sizeof;
             desc.bindFlags = RenderResourceBindFlag.IndexBuffer;
             desc.usage = RenderResourceUsage.Immutable;
-            _indexBuffer = Renderer.Get().CreateBuffer(desc);
+            _indexBuffer = Renderer.CreateBuffer(desc);
         }
     }
 }

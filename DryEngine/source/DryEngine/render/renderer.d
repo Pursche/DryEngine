@@ -2,34 +2,36 @@ module DryEngine.render.renderer;
 
 import DryEngine.render.types;
 
+import gl3n.linalg;
+
+enum RenderViewType
+{
+    Main,
+    Shadow,
+    Reflect,
+}
+
+struct RenderView
+{
+    mat4 matView;
+    mat4 matProj;
+    RenderViewType type;
+}
+
 class Renderer 
 {
-    static Renderer _instance;
-    static public Renderer Get()
+    static protected Renderer _instance;
+
+    static public RenderResourceHandle CreateTexture(const RenderTextureDesc desc)
     {
-        return _instance;
+        return _instance._CreateTexture(desc);
     }
 
-    public RenderResourceHandle CreateTexture(const RenderTextureDesc desc)
+    static public RenderResourceHandle CreateBuffer(const RenderBufferDesc desc)
     {
-        const RenderResourceHandle handle = 0; // todo
-        if (!InitTexture(handle, desc))
-        {
-            return cast(RenderResourceHandle)(0xffffffff);
-        }
-        return handle;
+        return _instance._CreateBuffer(desc);
     }
 
-    public RenderResourceHandle CreateBuffer(const RenderBufferDesc desc)
-    {
-        const RenderResourceHandle handle = 0; // todo
-        if (!InitBuffer(handle, desc))
-        {
-            return cast(RenderResourceHandle)(0xffffffff);
-        }
-        return handle;
-    }
-
-    protected abstract bool InitTexture(RenderResourceHandle handle, const RenderTextureDesc desc);
-    protected abstract bool InitBuffer(RenderResourceHandle handle, const RenderBufferDesc desc);
+    protected abstract RenderResourceHandle _CreateTexture(const RenderTextureDesc desc);
+    protected abstract RenderResourceHandle _CreateBuffer(const RenderBufferDesc desc);
 }

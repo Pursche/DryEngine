@@ -1,6 +1,7 @@
 module DryECS.components.meshcollider;
-import DryECS.components.transform;
-import DryECS.utils;
+
+public import DryECS.components.transform;
+public import DryECS.utils;
 
 alias void MeshCollider;//todo
 
