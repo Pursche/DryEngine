@@ -25,4 +25,4 @@ docs/
 *.lst
 
 # Generated d source files
-*.gen.d
+__generated__
