@@ -15,7 +15,7 @@ struct AxisAlignedBox
     vec2 max;
 }
 
-@Component
+@Component(64)
 @Requires!TransformComponent
 struct MeshComponent
 {

@@ -4,7 +4,7 @@ public import DryECS.utils;
 public import gl3n.linalg;
 
 
-@Component
+@Component(512)
 struct TransformComponent
 {
     vec3 position = vec3(0,0,0);

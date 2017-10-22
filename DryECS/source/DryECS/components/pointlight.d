@@ -4,7 +4,7 @@ public import DryECS.components.transform;
 public import DryECS.utils;
 public import gl3n.linalg;
 
-@Component
+@Component(128)
 @Requires!TransformComponent
 struct PointLightComponent
 {

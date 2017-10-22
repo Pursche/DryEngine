@@ -6,6 +6,7 @@ import DryECS.components.mesh;
 
 import gl3n.linalg;
 
+/*
 @System
 @In!(TransformComponent.matWorld)("matWorld")
 @In!(MeshComponent.mesh)("meshes")
@@ -16,4 +17,4 @@ void DrawMeshes(
     const void*[] materials)
 {
     
-}
+}*/

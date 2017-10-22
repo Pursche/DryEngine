@@ -8,7 +8,10 @@ import std.traits;
 
 import DryECS.__generated__.includes;
 
-struct Component{}
+struct Component
+{
+    int count = -1;
+}
 struct System{}
 struct Internal{}
 

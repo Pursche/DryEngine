@@ -212,3 +212,84 @@ string _GenModuleUpdate(alias Module)(ref string[] knownComponents, ref int[] co
     }
     return func.data;
 }
+
+string _GenComponentComponentStore(alias Comp)(ref string[] knownComponents, ref int[] componentIds)
+{
+    auto func = appender!string;
+    
+    alias components = getUDAs!(Comp, Component);
+
+    string path;
+    string name;
+
+    string fullyQualifiedName = fullyQualifiedName!(Comp);
+    SplitFQN(fullyQualifiedName, path, name);
+    
+    if (!knownComponents.canFind(name))
+    {
+        string componentNameId = name ~ "ID";
+        // enum transformComponentID  = (1 << 0);
+        func.put("enum " ~ componentNameId ~ " = (1 << " ~ to!string(knownComponents.length) ~ ");\n" );
+        // ComponentStore!(TransformComponent, transformComponentID) transformComponents;
+        func.put("ComponentStore!(" ~ name ~ ", " ~ componentNameId ~ ") " ~ GetSOANameFromComponent(name) ~ ";\n");
+
+        knownComponents ~= name;
+    }
+
+    return func.data;
+}
+
+string _GenModuleComponentStore(alias Module)(ref string[] knownComponents, ref int[] componentIds)
+{   
+    auto func = appender!string;
+
+    string[] doneComponents;
+
+    alias components = getSymbolsByUDA!(Module, Component);
+    foreach(component; components)
+    {
+        if (doneComponents.canFind(fullyQualifiedName!(component)))
+            continue;
+        
+        func.put(_GenComponentComponentStore!(component)(knownComponents, componentIds));
+        doneComponents ~= fullyQualifiedName!(component);
+    }
+    return func.data;
+}
+
+string _GenComponentInit(alias Comp)(ref string[] knownComponents, ref int[] componentIds)
+{
+    auto func = appender!string;
+
+    string path;
+    string name;
+
+    string fullyQualifiedName = fullyQualifiedName!(Comp);
+    SplitFQN(fullyQualifiedName, path, name);
+    
+    alias components = getUDAs!(Comp, Component);
+    foreach (component; components) // Find the Component UDA
+    {
+        // transformComponents = new typeof(transformComponents)(64);
+        func.put(GetSOANameFromComponent(name) ~ " = new typeof(" ~ GetSOANameFromComponent(name) ~ ")(" ~ to!string(component.count) ~ ");\n");
+        return func.data;
+    }
+}
+
+string _GenModuleInit(alias Module)(ref string[] knownComponents, ref int[] componentIds)
+{   
+    auto func = appender!string;
+
+    string[] doneComponents;
+
+    alias components = getSymbolsByUDA!(Module, Component);
+    foreach(component; components)
+    {
+        if (doneComponents.canFind(fullyQualifiedName!(component)))
+            continue;
+        
+        func.put(_GenComponentInit!(component)(knownComponents, componentIds));
+        doneComponents ~= fullyQualifiedName!(component);
+    }
+    return func.data;
+}
