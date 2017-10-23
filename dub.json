@@ -21,7 +21,8 @@
 	],
 	"libs-windows": [
 		"dxgi",
-		"d3d11"
+		"d3d11",
+		"d3dcompiler"
 	],
 	"excludedSourceFiles-windows": [
 		"*linux/*"

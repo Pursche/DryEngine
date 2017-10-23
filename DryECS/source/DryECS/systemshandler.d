@@ -24,18 +24,10 @@ ComponentStore!(MeshComponent, meshComponentID) meshComponents;
 
 export void Init() // Will be auto generated
 {
-    try
-    {
-        transformComponents = new typeof(transformComponents)(64);
-        cameraComponents = new typeof(cameraComponents)(32);
-        pointLightComponents = new typeof(pointLightComponents)(1024);
-        meshComponents = new typeof(meshComponents)(1024);
-    }
-    catch (Throwable e) 
-    {
-        import core.sys.windows.windows;
-        MessageBoxA(null, e.msg.toStringz(), null, MB_ICONERROR);
-    }
+    transformComponents = new typeof(transformComponents)(64);
+    cameraComponents = new typeof(cameraComponents)(32);
+    pointLightComponents = new typeof(pointLightComponents)(1024);
+    meshComponents = new typeof(meshComponents)(1024);
 }
 
 export EntityID CreateEntity(EntityType type)

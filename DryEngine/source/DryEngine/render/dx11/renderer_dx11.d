@@ -109,6 +109,11 @@ class Renderer_DX11 : Renderer
         return _device;
     }
 
+    public ID3D11DeviceContext GetD3DContext()
+    {
+        return _context;
+    }
+
     public void Draw()
     {
         import core.stdc.string : memcpy;
