@@ -1,0 +1,75 @@
+// COMPONENTSTORES
+enum CameraComponentID = (1 << 0);
+ComponentStore!(CameraComponent, CameraComponentID) cameraComponents;
+enum MeshComponentID = (1 << 1);
+ComponentStore!(MeshComponent, MeshComponentID) meshComponents;
+enum MeshColliderComponentID = (1 << 2);
+ComponentStore!(MeshColliderComponent, MeshColliderComponentID) meshColliderComponents;
+enum PointLightComponentID = (1 << 3);
+ComponentStore!(PointLightComponent, PointLightComponentID) pointLightComponents;
+enum TransformComponentID = (1 << 4);
+ComponentStore!(TransformComponent, TransformComponentID) transformComponents;
+
+// INIT
+try
+{
+cameraComponents = new typeof(cameraComponents)(8);
+meshComponents = new typeof(meshComponents)(64);
+meshColliderComponents = new typeof(meshColliderComponents)(128);
+pointLightComponents = new typeof(pointLightComponents)(128);
+transformComponents = new typeof(transformComponents)(512);
+} 
+catch(Throwable e) 
+{
+import core.sys.windows.windows;
+MessageBoxA(null, e.msg.toStringz(), null, MB_ICONERROR);
+}
+
+// REGISTER ENTITY
+cameraComponents.Add(type);
+meshComponents.Add(type);
+meshColliderComponents.Add(type);
+pointLightComponents.Add(type);
+transformComponents.Add(type);
+
+// UPDATE
+//DryECS.systems.camera.UpdateViewMatrices
+auto out_matView = cameraComponents.Write!(17, typeof(DryECS.components.camera.CameraComponent.matView), "matView");
+UpdateViewMatrices(transformComponents.Read!(17, typeof(DryECS.components.transform.TransformComponent.matWorld), "matWorld"),
+out_matView);
+cameraComponents.Feedback!(17, "matView")(out_matView);
+
+//DryECS.systems.camera.UpdateProjectionMatrices
+auto out_matProj = cameraComponents.Write!(1, typeof(DryECS.components.camera.CameraComponent.matProj), "matProj");
+UpdateProjectionMatrices(cameraComponents.Read!(1, typeof(DryECS.components.camera.CameraComponent.fov), "fov"),
+out_matProj);
+cameraComponents.Feedback!(1, "matProj")(out_matProj);
+
+//DryECS.systems.camera.CombineMatrices
+auto out_matViewProj = cameraComponents.Write!(1, typeof(DryECS.components.camera.CameraComponent.matViewProj), "matViewProj");
+CombineMatrices(cameraComponents.Read!(1, typeof(DryECS.components.camera.CameraComponent.matView), "matView"),
+cameraComponents.Read!(1, typeof(DryECS.components.camera.CameraComponent.matProj), "matProj"),
+out_matViewProj);
+cameraComponents.Feedback!(1, "matViewProj")(out_matViewProj);
+
+//DryECS.systems.lightcull.Cull
+Cull(transformComponents.Read!(24, typeof(DryECS.components.transform.TransformComponent.position), "position"),
+pointLightComponents.Read!(24, typeof(DryECS.components.pointlight.PointLightComponent.radius), "radius"),
+cameraComponents.Read!(1, typeof(DryECS.components.camera.CameraComponent.matViewProj), "matViewProj"));
+
+//DryECS.systems.transform.UpdateTransform
+auto out_matWorld = transformComponents.Write!(16, typeof(DryECS.components.transform.TransformComponent.matWorld), "matWorld");
+UpdateTransform(transformComponents.Read!(16, typeof(DryECS.components.transform.TransformComponent.position), "position"),
+transformComponents.Read!(16, typeof(DryECS.components.transform.TransformComponent.rotation), "rotation"),
+transformComponents.Read!(16, typeof(DryECS.components.transform.TransformComponent.scale), "scale"),
+out_matWorld);
+transformComponents.Feedback!(16, "matWorld")(out_matWorld);
+
+
+// VERIFY
+cameraComponents.Verify();
+meshComponents.Verify();
+meshColliderComponents.Verify();
+pointLightComponents.Verify();
+transformComponents.Verify();
+

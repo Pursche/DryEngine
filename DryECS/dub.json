@@ -17,5 +17,8 @@
 	],
 	"preBuildCommands-linux": [
 		"./../precompiler.sh"
+	],
+	"buildRequirements": [
+		"silenceDeprecations"
 	]
 }

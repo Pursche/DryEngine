@@ -59,86 +59,31 @@ void Run()
     {
         includeFile.writeln(imp);
     }
-    
-    // GenUpdate()
-    includeFile.writeln("");
-    includeFile.writeln("string GenUpdate()");
-    includeFile.writeln("{");
-    includeFile.writeln("   string[] knownComponents;");
-    includeFile.writeln("   int[] componentIds;");
-    includeFile.writeln("   auto func = appender!string;");
-    includeFile.writeln("   func.put(\"{\\n\");");
-    
+
+    includeFile.writeln("enum SystemModules = [");
+    int count = 0;
     foreach(string system; systems)
     {
-        includeFile.writeln("   func.put(_GenModuleUpdate!(" ~ system ~ ")(knownComponents, componentIds));");
+        string systemLine = "\"" ~ system ~ "\"";
+
+        if (++count < systems.length)
+            systemLine ~= ",";
+        includeFile.writeln(systemLine);
     }
-
-    includeFile.writeln("   func.put(\"\\n}\");");
-    includeFile.writeln("   return func.data;");
-    includeFile.writeln("}");
-
-    // GenComponentStores()
-    includeFile.writeln("");
-    includeFile.writeln("string GenComponentStores()");
-    includeFile.writeln("{");
-    includeFile.writeln("   string[] knownComponents;");
-    includeFile.writeln("   int[] componentIds;");
-    includeFile.writeln("   auto func = appender!string;");
+    includeFile.writeln("];\n");
     
+    includeFile.writeln("enum ComponentModules = [");
+    count = 0;
     foreach(string component; components)
     {
-        includeFile.writeln("   func.put(_GenModuleComponentStore!(" ~ component ~ ")(knownComponents, componentIds));");
+        string componentLine = "\"" ~ component ~ "\"";
+
+        if (++count < components.length)
+            componentLine ~= ",";
+        includeFile.writeln(componentLine);
     }
-
-    includeFile.writeln("   return func.data;");
-    includeFile.writeln("}");
-
-    /*string GenInit()
-{
-    string[] knownComponents;
-    int[] componentIds;
-    auto func = appender!string;
-    func.put("try\n");
-    func.put("{\n");
-   
-    func.put(_GenModuleInit!(DryECS.components.camera)(knownComponents, componentIds));
-    func.put(_GenModuleInit!(DryECS.components.mesh)(knownComponents, componentIds));
-    func.put(_GenModuleInit!(DryECS.components.meshcollider)(knownComponents, componentIds));
-    func.put(_GenModuleInit!(DryECS.components.pointlight)(knownComponents, componentIds));
-    func.put(_GenModuleInit!(DryECS.components.transform)(knownComponents, componentIds));
-    func.put("}\n");
-    func.put("catch (Throwable e)\n");
-    func.put("{\n");
-    func.put("import core.sys.windows.windows;\n");
-    func.put("MessageBoxA(null, e.msg.toStringz(), null, MB_ICONERROR);\n");
-    func.put("}");
-    return func.data;
-}*/
-
-    // GenInit()
-    includeFile.writeln("");
-    includeFile.writeln("string GenInit()");
-    includeFile.writeln("{");
-    includeFile.writeln("   string[] knownComponents;");
-    includeFile.writeln("   int[] componentIds;");
-    includeFile.writeln("   auto func = appender!string;");
-    includeFile.writeln("   func.put(\"try\\n\");");
-    includeFile.writeln("   func.put(\"{\\n\");");
+    includeFile.writeln("];\n");
     
-    foreach(string component; components)
-    {
-        includeFile.writeln("   func.put(_GenModuleInit!(" ~ component ~ ")(knownComponents, componentIds));");
-    }
-    includeFile.writeln("   func.put(\"}\\n\");");
-    includeFile.writeln("   func.put(\"catch (Throwable e)\\n\");");
-    includeFile.writeln("   func.put(\"{\\n\");");
-    includeFile.writeln("   func.put(\"import core.sys.windows.windows;\\n\");");
-    includeFile.writeln("   func.put(\"MessageBoxA(null, e.msg.toStringz(), null, MB_ICONERROR);\\n\");");
-    includeFile.writeln("   func.put(\"}\\n\");");
-
-    includeFile.writeln("   return func.data;");
-    includeFile.writeln("}");
 
     string[] templateLines;
     string templatePath = exePath.PathUp().PathUp() ~ dirSeparator ~ buildPath("DryECS", "source", "DryECS", "includes.dtemplate");

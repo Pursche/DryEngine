@@ -7,6 +7,7 @@ import DryECS.components.pointlight;
 
 import gl3n.linalg;
 
+@System()
 @In!(TransformComponent.position)("lightPos", 0)
 @In!(PointLightComponent.radius)("lightRadius", 0)
 @In!(CameraComponent.matViewProj)("matViewProj", 1)

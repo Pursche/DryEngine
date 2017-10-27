@@ -5,6 +5,7 @@ import DryECS.utils;
 
 import gl3n.linalg;
 
+@System()
 @In!(TransformComponent.matWorld)("matWorld")
 @Out!(CameraComponent.matView)("matView")
 void UpdateViewMatrices(
@@ -17,6 +18,7 @@ void UpdateViewMatrices(
     }
 }
 
+@System()
 @In!(CameraComponent.fov)("fov")
 @Out!(CameraComponent.matProj)("matProj")
 void UpdateProjectionMatrices(
@@ -31,6 +33,7 @@ void UpdateProjectionMatrices(
     }
 }
 
+@System()
 @In!(CameraComponent.matView)("matView")
 @In!(CameraComponent.matProj)("matProj")
 @Out!(CameraComponent.matViewProj)("matViewProj")

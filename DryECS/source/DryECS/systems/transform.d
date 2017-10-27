@@ -3,11 +3,12 @@ import DryECS.components.transform;
 import DryECS.utils;
 import gl3n.linalg;
 
+@System()
 @In!(TransformComponent.position)("positions")
 @In!(TransformComponent.rotation)("rotations")
 @In!(TransformComponent.scale)("scales")
 @Out!(TransformComponent.matWorld)("worldMatrices")
-void Update(const vec3[] positions, 
+void UpdateTransform(const vec3[] positions, 
     const quat[] rotations, 
     const vec3[] scales,
     mat4[] worldMatrices) pure

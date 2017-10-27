@@ -77,9 +77,15 @@ template SOA(Struct)
 }
 
 import std.string;
-void SplitFQN(string fqn, out string namespace, out string name)
+void SplitFQN(string fqn, out string namespace, out string name) pure
 {
     int index = cast(int)fqn.lastIndexOf('.');
     namespace = fqn[0 .. index];
     name = fqn[index+1 .. fqn.length];
+}
+
+string GetSOANameFromComponent(string component) pure
+{
+    string SOAName = component[0..1].toLower() ~ component[1..component.length] ~ "s";
+    return SOAName;
 }

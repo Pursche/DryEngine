@@ -32,6 +32,12 @@ import DryECS.__generated__.includes;
 //pragma(msg, GenComponentStores());
 mixin(GenComponentStores());
 
+import std.array;
+import std.traits;
+import std.conv;
+import std.algorithm;
+import std.uni;
+
 export void Init()
 {
     //pragma(msg, GenInit());
@@ -44,8 +50,12 @@ export void Init()
 	    generatedCode.writeln(GenComponentStores());
         generatedCode.writeln("// INIT");
 	    generatedCode.writeln(GenInit());
+        generatedCode.writeln("// REGISTER ENTITY");
+        generatedCode.writeln(GenRegisterEntity());
         generatedCode.writeln("// UPDATE");
 	    generatedCode.writeln(GenUpdate());
+        generatedCode.writeln("// VERIFY");
+        generatedCode.writeln(GenVerify());
     }
 }
 
@@ -56,20 +66,17 @@ export EntityID CreateEntity(EntityType type)
     return 0;//todo
 }
 
-// todo: auto-generate
 void _RegisterEntity(EntityType type)
 {
-    transformComponents.Add(type);
-    cameraComponents.Add(type);
-    pointLightComponents.Add(type);
+    //pragma(msg, GenRegisterEntity());
+    mixin(GenRegisterEntity());
 }
 
-void Update(float deltaTime) // Will be auto generated
+void Update(float deltaTime)
 {
     //pragma(msg, GenUpdate());
     mixin(GenUpdate());
 
-    transformComponents.Verify();
-    cameraComponents.Verify();
-    pointLightComponents.Verify();
+    //pragma(msg, GenVerify());
+    mixin(GenVerify());
 }

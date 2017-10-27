@@ -6,290 +6,434 @@ import std.conv;
 import std.algorithm;
 import std.uni;
 
+// New Generator
 
-string GetSOANameFromComponent(string component)
+struct GeneratorSystemInput
 {
-    string SOAName = component[0..1].toLower() ~ component[1..component.length] ~ "s";
-    return SOAName;
+    string moduleName;
+    string componentName;
+    string variableName;
+    string fullyQualifiedName;
+    int componentID = -1;
+    string parameter;
+    int dependencyGroup = 0;
 }
 
-int _AddId(ref string[] knownComponents, ref int[] componentIds, string component)
+struct GeneratorSystemOutput
 {
-    knownComponents ~= component;
-    int id = 1 << componentIds.length;
-    componentIds ~= id;
-    return id;
+    string moduleName;
+    string componentName;
+    string variableName;
+    string fullyQualifiedName;
+    int componentID = -1;
+    string parameter;
+    int dependencyGroup = 0;
 }
 
-int _GetId(ref string[] knownComponents, ref int[] componentIds, string component)
+struct GeneratorSystem
 {
-    for(int i = 0; i < knownComponents.length; i++)
-    {
-        if (component == knownComponents[i])
-        {
-            return componentIds[i];
-        }
-    }
-    return -1;
-}
-
-string _ParseKeys(alias System)(ref string[] knownComponents, ref int[] componentIds, out int[int] keys)
-{
-    alias outputs = getUDAs!(System, Out);
-    alias inputs = getUDAs!(System, In);
-
-    foreach (output; outputs) // Find all outputs used components
-    {
-        string component;
-        string name;
-        SplitFQN(output.variable, component, name);
-
-        string moduleName;
-        string componentName;
-        SplitFQN(component, moduleName, componentName);
-
-        int id = _GetId(knownComponents, componentIds, componentName);
-        if (id == -1)
-        {
-            id = _AddId(knownComponents, componentIds, componentName);
-        }
-
-        int key = output.dependencyGroup;
-        if (!(key in keys))
-        {
-            keys[key] = id;
-        }
-        else if (!(keys[key] & id))
-        {
-            keys[key] += id;
-        }
-    }
-
-    foreach (input; inputs) // Find all inputs used components
-    {
-        string component;
-        string name;
-        SplitFQN(input.variable, component, name);
-
-        string moduleName;
-        string componentName;
-        SplitFQN(component, moduleName, componentName);
-
-        int id = _GetId(knownComponents, componentIds, componentName);
-        if (id == -1)
-        {
-            id = _AddId(knownComponents, componentIds, componentName);
-        }
-
-        int key = input.dependencyGroup;
-        if (!(key in keys))
-        {
-            keys[key] = id;
-        }
-        else if (!(keys[key] & id))
-        {
-            keys[key] += id;
-        }
-    }
-
-    return "";
-}
-
-string _GenSystemUpdate(alias System)(ref string[] knownComponents, ref int[] componentIds)
-{
-    //int key = _GetKey!(System)(knownComponents, componentIds);
-    auto func = appender!string;
-    int[int] keys;
-    _ParseKeys!(System)(knownComponents, componentIds, keys);
-    
-    string[] variables;
+    string name;
+    string moduleName;
+    string fullyQualifiedName;
+    ulong[] dependencyKeys;
+    GeneratorSystemInput[] inputs;
+    GeneratorSystemOutput[] outputs;
     string[] parameters;
-    
-    
+}
 
-    func.put("// " ~ fullyQualifiedName!(System) ~ "\n");
+struct GeneratorComponent
+{
+    string name;
+    string moduleName;
+    string fullyQualifiedName;
+    uint count;
+    ulong id;
+}
+
+struct GeneratorContext
+{
+    GeneratorSystem[] systems;
+    GeneratorComponent[] components;
+    string debugString;
+}
+
+enum ECSReservedKeywords = 
+[
+    "Update"
+];
+
+void _GenScanSystem(alias System)(ref GeneratorContext context) pure
+{
+    alias systemFQN = fullyQualifiedName!(System);
+
+    pragma(msg, "ECS Compiletime Found system: " ~ systemFQN);
+    GeneratorSystem newSystem;
+
+    {
+        string moduleName;
+        string systemName;
+        SplitFQN(systemFQN, moduleName, systemName);
+
+        newSystem.name = systemName;
+        newSystem.moduleName = moduleName;
+        newSystem.fullyQualifiedName = systemFQN;
+    }
+
+    foreach(keyword; ECSReservedKeywords)
+    {
+        assert(newSystem.name != keyword, "ECS Compiletime: " ~ newSystem.fullyQualifiedName  ~ " '" ~ keyword ~ "' is a reserved keyword and thus not an allowed name for a system");
+    }
+
+    alias inputs = getUDAs!(System, In);
+    foreach(input; inputs)
+    {
+        GeneratorSystemInput newInput;
+
+        string component;
+        string variableName;
+        SplitFQN(input.variable, component, variableName);
+
+        string moduleName;
+        string componentName;
+        SplitFQN(component, moduleName, componentName);
+
+        newInput.moduleName = moduleName;
+        newInput.componentName = componentName;
+        newInput.variableName = variableName;
+        newInput.fullyQualifiedName = input.variable;
+        newInput.parameter = input.parameter;
+        newInput.dependencyGroup = input.dependencyGroup;
+
+        newSystem.inputs ~= newInput;
+    }
 
     alias outputs = getUDAs!(System, Out);
-    alias inputs = getUDAs!(System, In);
-
-    foreach (output; outputs) // Find all outputs and map them to their parameters
+    foreach(output; outputs)
     {
-        int key = keys[output.dependencyGroup];
+        GeneratorSystemOutput newOutput;
+
         string component;
-        string name;
-        SplitFQN(output.variable, component, name);
+        string variableName;
+        SplitFQN(output.variable, component, variableName);
 
         string moduleName;
         string componentName;
         SplitFQN(component, moduleName, componentName);
 
-        string SOAName = GetSOANameFromComponent(componentName);
+        newOutput.moduleName = moduleName;
+        newOutput.componentName = componentName;
+        newOutput.variableName = variableName;
+        newOutput.fullyQualifiedName = output.variable;
+        newOutput.parameter = output.parameter;
+        newOutput.dependencyGroup = output.dependencyGroup;
 
-        func.put("auto out_" ~ name ~ " = " ~ SOAName ~ ".Write!(" ~ to!string(key) ~ ", " ~ typeof(mixin(output.variable)).stringof ~ ", \"" ~ name ~ "\");\n"); // Declare them
-        variables ~= "out_" ~ name;
-        parameters ~= output.parameter;
-        //func.put("auto out_\n");
+        newSystem.outputs ~= newOutput;
     }
 
-    foreach (input; inputs) // Find all inputs and map them to their parameters
+    foreach(parameter; ParameterIdentifierTuple!(System))
     {
-        int key = keys[input.dependencyGroup];
-        string component;
-        string name;
-        SplitFQN(input.variable, component, name);
-
-        string moduleName;
-        string componentName;
-        SplitFQN(component, moduleName, componentName);
-
-        string SOAName = GetSOANameFromComponent(componentName);
-        
-        variables ~= SOAName ~ ".Read!(" ~ to!string(key) ~ ", " ~ typeof(mixin(input.variable)).stringof ~ ", \"" ~ name ~ "\")";
-        parameters ~= input.parameter;
+        newSystem.parameters ~= parameter;
     }
 
-    string fqn = fullyQualifiedName!System;
-
-    func.put(fqn ~ "(");
-
-    bool first = true;
-    foreach (parameter; ParameterIdentifierTuple!System) // Find the parameter name and match them with the registered ins/outs
-    {
-        bool found = false;
-        for(int i = 0; i < parameters.length; i++)
-        {
-            if (parameter == parameters[i])
-            {
-                if (!first)
-                    func.put(",\n");
-                func.put(variables[i]);
-                found = true;
-                break;
-            }
-        }
-        
-        assert(found, "Error: ECS System " ~ fqn ~ " has an unbound parameter '" ~ parameter ~ "', this is not allowed");
-        first = false;
-    }
-
-    func.put(");\n");
-
-    foreach (output; outputs) // Feedback outputs into components
-    {
-        int key = keys[output.dependencyGroup];
-        string component;
-        string name;
-        SplitFQN(output.variable, component, name);
-
-        string moduleName;
-        string componentName;
-        SplitFQN(component, moduleName, componentName);
-
-        string SOAName = GetSOANameFromComponent(componentName);
-
-        func.put(SOAName ~ ".Feedback!(" ~ to!string(key) ~ ", \"" ~ name ~ "\")(" ~ "out_" ~ name ~ ");\n"); // Declare them
-    }
-
-    func.put("\n");
-
-    return func.data;
+    context.systems ~= newSystem;
 }
 
-string _GenModuleUpdate(alias Module)(ref string[] knownComponents, ref int[] componentIds)
-{   
-    auto func = appender!string;
-
-    string[] doneSystems;
-
-    alias systems = getSymbolsByUDA!(Module, In);
-    foreach(system; systems)
-    {
-        if (doneSystems.canFind(fullyQualifiedName!(system)))
-            continue;
-        
-        func.put(_GenSystemUpdate!(system)(knownComponents, componentIds));
-        doneSystems ~= fullyQualifiedName!(system);
-    }
-    return func.data;
-}
-
-string _GenComponentComponentStore(alias Comp)(ref string[] knownComponents, ref int[] componentIds)
+void _GenScanComponent(alias Comp)(ref GeneratorContext context) pure
 {
-    auto func = appender!string;
-    
-    alias components = getUDAs!(Comp, Component);
+    alias componentFQN = fullyQualifiedName!(Comp);
 
-    string path;
-    string name;
+    pragma(msg, "ECS Compiletime Found component: " ~ componentFQN);
 
-    string fullyQualifiedName = fullyQualifiedName!(Comp);
-    SplitFQN(fullyQualifiedName, path, name);
-    
-    if (!knownComponents.canFind(name))
-    {
-        string componentNameId = name ~ "ID";
-        // enum transformComponentID  = (1 << 0);
-        func.put("enum " ~ componentNameId ~ " = (1 << " ~ to!string(knownComponents.length) ~ ");\n" );
-        // ComponentStore!(TransformComponent, transformComponentID) transformComponents;
-        func.put("ComponentStore!(" ~ name ~ ", " ~ componentNameId ~ ") " ~ GetSOANameFromComponent(name) ~ ";\n");
+    string moduleName;
+    string componentName;
+    SplitFQN(componentFQN, moduleName, componentName);
 
-        knownComponents ~= name;
-    }
+    GeneratorComponent newComponent;
+    newComponent.name = componentName;
+    newComponent.moduleName = moduleName;
+    newComponent.fullyQualifiedName = componentFQN;
 
-    return func.data;
-}
-
-string _GenModuleComponentStore(alias Module)(ref string[] knownComponents, ref int[] componentIds)
-{   
-    auto func = appender!string;
-
-    string[] doneComponents;
-
-    alias components = getSymbolsByUDA!(Module, Component);
-    foreach(component; components)
-    {
-        if (doneComponents.canFind(fullyQualifiedName!(component)))
-            continue;
-        
-        func.put(_GenComponentComponentStore!(component)(knownComponents, componentIds));
-        doneComponents ~= fullyQualifiedName!(component);
-    }
-    return func.data;
-}
-
-string _GenComponentInit(alias Comp)(ref string[] knownComponents, ref int[] componentIds)
-{
-    auto func = appender!string;
-
-    string path;
-    string name;
-
-    string fullyQualifiedName = fullyQualifiedName!(Comp);
-    SplitFQN(fullyQualifiedName, path, name);
-    
     alias components = getUDAs!(Comp, Component);
     foreach (component; components) // Find the Component UDA
     {
-        // transformComponents = new typeof(transformComponents)(64);
-        func.put(GetSOANameFromComponent(name) ~ " = new typeof(" ~ GetSOANameFromComponent(name) ~ ")(" ~ to!string(component.count) ~ ");\n");
-        return func.data;
+        newComponent.count = component.count;
+        break;
     }
+
+    context.components ~= newComponent;
 }
 
-string _GenModuleInit(alias Module)(ref string[] knownComponents, ref int[] componentIds)
+void _GenScanModule(string M, int scanType)(ref GeneratorContext context) pure
 {   
+    mixin("static import Module = " ~ M ~ ";");
+
+    if (scanType == SCANTYPE_System)
+    {
+        // Scan for systems
+        alias systems = getSymbolsByUDA!(Module, System);
+        foreach(system; systems)
+        {
+            alias systemFQN = fullyQualifiedName!(system);
+
+            bool alreadyExists = false;
+            foreach(GeneratorSystem genSystem; context.systems)
+            {
+                if (genSystem.name == systemFQN)
+                {
+                    alreadyExists = true;
+                    break;
+                }
+            }
+
+            if (alreadyExists)
+                continue;
+
+            _GenScanSystem!(system)(context);
+            
+        }
+    }
+    else if (scanType == SCANTYPE_Component)
+    {
+        // Scan for components
+        alias components = getSymbolsByUDA!(Module, Component);
+        foreach(component; components)
+        {
+            alias componentFQN = fullyQualifiedName!(component);
+
+            bool alreadyExists = false;
+            foreach(GeneratorComponent genComponent; context.components)
+            {
+                if (genComponent.name == componentFQN)
+                {
+                    alreadyExists = true;
+                    break;
+                }
+            }
+
+            if (alreadyExists)
+                continue;
+
+            _GenScanComponent!(component)(context);
+        }
+    }
+    else
+    {
+        assert(false, "ECS Compiletime: ERROR - Unknown scan type");
+    }
+    
+}
+
+string GenScanModule(string[] SMS, int scanType)() pure {
+	string ret;
+	
+	foreach(sm; SMS) {
+		ret ~= "     _GenScanModule!(\"" ~ sm ~ "\", " ~ to!string(scanType) ~ ")(context);\n";
+	}
+	
+	return ret;
+}
+
+string GenResolveSystemDependencies(ref GeneratorContext context) pure
+{
+
+    string dbg = "\"Systems: " ~ to!string(context.systems.length) ~ " Components: " ~ to!string(context.components.length) ~ "\"";
+    return dbg;
+}
+
+enum SCANTYPE_System = 0;
+enum SCANTYPE_Component = 1;
+
+string ResolveSystemKeys(ref GeneratorContext context) pure
+{
+    auto dbg = appender!string;
+    foreach (ref system; context.systems)
+    {
+        ulong[] dependencyKeys;
+        foreach(ref input; system.inputs)
+        {
+            int count = 0;
+
+            foreach(component; context.components)
+            {
+                if (input.componentName == component.name)
+                {
+                    input.componentID = count;
+
+                    while (dependencyKeys.length <= input.dependencyGroup)
+                        dependencyKeys ~= 0;
+
+                    dependencyKeys[input.dependencyGroup] = dependencyKeys[input.dependencyGroup] | (1 << count);
+                    break;
+                }
+                count++;
+            }
+        }
+
+        foreach(ref output; system.outputs)
+        {
+            int count = 0;
+
+            foreach(component; context.components)
+            {
+                if (output.componentName == component.name)
+                {
+                    output.componentID = count;
+                    
+                    while (dependencyKeys.length <= output.dependencyGroup)
+                        dependencyKeys ~= 0;
+
+                    dependencyKeys[output.dependencyGroup] = dependencyKeys[output.dependencyGroup] | (1 << count);
+                    break;
+                }
+                count++;
+            }
+        }
+
+        system.dependencyKeys = dependencyKeys;
+    }
+    return dbg.data;
+}
+
+GeneratorContext BuildGeneratorContext() pure
+{
+    GeneratorContext context;
+    mixin(GenScanModule!(SystemModules, SCANTYPE_System)());
+    mixin(GenScanModule!(ComponentModules, SCANTYPE_Component)());
+    context.debugString = ResolveSystemKeys(context);
+    return context;
+}
+
+string GenComponentStores()
+{
+    GeneratorContext context = BuildGeneratorContext();
+
+    auto func = appender!string;
+    
+    int counter = 0;
+    foreach(GeneratorComponent component; context.components)
+    {
+        string componentNameID = component.name ~ "ID";
+        // enum transformComponentID = (1 << 0)
+        func.put("enum " ~ componentNameID ~ " = (1 << " ~ to!string(counter) ~ ");\n");
+        // ComponentStore!(TransformComponent, transformComponentID) transformComponents;
+        func.put("ComponentStore!(" ~ component.name ~ ", " ~ componentNameID ~ ") " ~ GetSOANameFromComponent(component.name) ~ ";\n");
+
+        counter++;
+    }
+    
+    return func.data;
+}
+
+string GenInit()
+{
+    GeneratorContext context = BuildGeneratorContext();
+
     auto func = appender!string;
 
-    string[] doneComponents;
-
-    alias components = getSymbolsByUDA!(Module, Component);
-    foreach(component; components)
+    func.put("try\n{\n");
+    foreach (component; context.components)
     {
-        if (doneComponents.canFind(fullyQualifiedName!(component)))
-            continue;
-        
-        func.put(_GenComponentInit!(component)(knownComponents, componentIds));
-        doneComponents ~= fullyQualifiedName!(component);
+        // transformComponents = new typeof(transformComponents)(64);
+        func.put(GetSOANameFromComponent(component.name) ~ " = new typeof(" ~ GetSOANameFromComponent(component.name) ~ ")(" ~ to!string(component.count) ~ ");\n");
     }
+    func.put("} \ncatch(Throwable e) \n{\n");
+    func.put("import core.sys.windows.windows;\n");
+    func.put("MessageBoxA(null, e.msg.toStringz(), null, MB_ICONERROR);\n");
+    func.put("}\n");
+    return func.data;
+}
+
+string GenUpdate()
+{
+    GeneratorContext context = BuildGeneratorContext();
+
+    auto func = appender!string;
+
+    foreach(system; context.systems)
+    {
+        string[] variables;
+        string[] parameters;
+
+        func.put("//" ~ system.fullyQualifiedName ~ "\n");
+
+        foreach(output; system.outputs)
+        {
+            string componentName = context.components[output.componentID].name;
+            string SOAName = GetSOANameFromComponent(componentName);
+            func.put("auto out_" ~ output.variableName ~ " = " ~ SOAName ~ ".Write!(" ~ to!string(system.dependencyKeys[output.dependencyGroup]) ~ ", typeof(" ~ output.fullyQualifiedName ~ "), \"" ~ output.variableName ~ "\");\n"); // Declare them
+        
+            variables ~= "out_" ~ output.variableName;
+            parameters ~= output.parameter;
+        }
+
+        foreach(input; system.inputs)
+        {
+            string componentName = context.components[input.componentID].name;
+            string SOAName = GetSOANameFromComponent(componentName);
+
+            variables ~= SOAName ~ ".Read!(" ~ to!string(system.dependencyKeys[input.dependencyGroup]) ~ ", typeof(" ~ input.fullyQualifiedName ~ "), \"" ~ input.variableName ~ "\")";
+            parameters ~= input.parameter;
+        }
+
+        func.put(system.name ~ "(");
+        
+        bool first = true;
+        foreach (parameter; system.parameters) // Find the parameter name and match them with the registered ins/outs
+        {
+            bool found = false;
+            for(int i = 0; i < parameters.length; i++)
+            {
+                if (parameter == parameters[i])
+                {
+                    if (!first)
+                        func.put(",\n");
+                    func.put(variables[i]);
+                    found = true;
+                    break;
+                }
+            }
+            
+            assert(found, "Error: ECS System " ~ system.fullyQualifiedName ~ " has an unbound parameter '" ~ parameter ~ "', this is not allowed");
+            first = false;
+        }
+
+        func.put(");\n");
+
+        foreach(output; system.outputs)
+        {
+            string componentName = context.components[output.componentID].name;
+            string SOAName = GetSOANameFromComponent(componentName);
+
+            func.put(SOAName ~ ".Feedback!(" ~ to!string(system.dependencyKeys[output.dependencyGroup]) ~ ", \"" ~ output.variableName ~ "\")(" ~ "out_" ~ output.variableName ~ ");\n"); // Declare them
+        }
+        func.put("\n");
+    }
+
+    return func.data;
+}
+
+string GenRegisterEntity() pure
+{
+    GeneratorContext context = BuildGeneratorContext();
+
+    auto func = appender!string;    
+    foreach(component; context.components)
+    {
+        func.put(GetSOANameFromComponent(component.name) ~ ".Add(type);\n");
+    }
+
+    return func.data;
+}
+
+string GenVerify() pure
+{
+    GeneratorContext context = BuildGeneratorContext();
+
+    auto func = appender!string;    
+    foreach(component; context.components)
+    {
+        func.put(GetSOANameFromComponent(component.name) ~ ".Verify();\n");
+    }
+
     return func.data;
 }
