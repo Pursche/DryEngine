@@ -1,6 +1,7 @@
 module DryGame.linux.main_windows_dx11;
 
 import core.sys.windows.windows;
+import core.stdc.stdio;
 import core.runtime;
 
 import std.stdio;
@@ -24,6 +25,8 @@ int DryMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 	debug
 	{
 		AllocConsole();
+		freopen("CONOUT$", "w", core.stdc.stdio.stdout);
+		freopen("CONOUT$", "w", core.stdc.stdio.stderr);
 	}
 
 	HRESULT hr;
@@ -102,9 +105,18 @@ int DryMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 			DispatchMessage(&msg);
 		}
 
-		system.Update();
+		ID3D11Texture2D backbuffer;
+		window.swapChain.GetBuffer(0, &IID_ID3D11Texture2D, cast(void**)(&backbuffer));
 
-		window.swapChain.Present(0, 0);
+		ID3D11RenderTargetView backbufferRTV;
+		device.CreateRenderTargetView(backbuffer, null, &backbufferRTV);
+    	backbuffer.Release();
+
+		system.Update(backbufferRTV);
+
+		window.swapChain.Present(1, 0);
+
+		backbufferRTV.Release();
 	}
 
 	UnregisterClass(wc.lpszClassName, wc.hInstance);
