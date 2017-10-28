@@ -9,12 +9,12 @@ import std.string;
 // To generate includes.d, running the precompiler will:
 //      1. Scan DryECS/components and DryECS/systems for modules
 //      2. Add public imports of all components and systems to the top of the file
-//	3. Create SystemModules and ComponentModules lists
+//	    3. Create SystemModules and ComponentModules lists
 //      4. After pausing to compile and run DryPrecompiler before DryECS, we resume compiling DryECS
 //      5. When this file gets compiled, the compiler will find the mixins, run the functions within them and evaluate their returned strings as code
 //          * This will run the root generation function (e.g GenUpdate), which in turn runs BuildGeneratorContext which creates a GeneratorContext object in compiletime
 //          * GeneratorContext is guaranteed to be identical after every call to BuildGeneratorContext
-//	6. We use the GeneratorContext in different functions (GenUpdate, GenInit, GenComponentStores etc) to generate needed code. Calls to mixin(*function*) actually compiles the code while pragma(msg, *function*) debug prints the result
+//	    6. We use the GeneratorContext in different functions (GenUpdate, GenInit, GenComponentStores etc) to generate needed code. Calls to mixin(*function*) actually compiles the code while pragma(msg, *function*) debug prints the result
 //      7. Lastly we add some runtime code to the Init function that will output a generatedECS.notd file with all our generated code for easier debugging
 //      
 // If you want to know what code this generates, start the game and look at generatedECS.notd next to the executable
@@ -46,13 +46,13 @@ export void Init()
     {
     	File generatedCode = File("generatedECS.notd", "w");
         generatedCode.writeln("// COMPONENTSTORES");
-	generatedCode.writeln(GenComponentStores());
+	    generatedCode.writeln(GenComponentStores());
         generatedCode.writeln("// INIT");
-	generatedCode.writeln(GenInit());
+	    generatedCode.writeln(GenInit());
         generatedCode.writeln("// REGISTER ENTITY");
         generatedCode.writeln(GenRegisterEntity());
         generatedCode.writeln("// UPDATE");
-	generatedCode.writeln(GenUpdate());
+	    generatedCode.writeln(GenUpdate());
         generatedCode.writeln("// VERIFY");
         generatedCode.writeln(GenVerify());
     }
